@@ -1,0 +1,1503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Socia Admin — Control Center</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ── TOKENS ─────────────────────────────────── */
+:root {
+  --ink:        #0B1120;
+  --ink-mid:    #1C2B45;
+  --ink-light:  #2E4166;
+  --teal:       #0F9B8E;
+  --teal-hi:    #14C5B5;
+  --teal-glow:  rgba(15,155,142,0.12);
+  --amber:      #E8A020;
+  --amber-lo:   #FEF3C7;
+  --rose:       #E8365D;
+  --rose-lo:    #FEE2E9;
+  --violet:     #7C3AED;
+  --violet-lo:  #EDE9FE;
+  --sky:        #0EA5E9;
+  --sky-lo:     #E0F2FE;
+  --surface:    #FFFFFF;
+  --surface-2:  #F5F7FA;
+  --border:     #E4E8EF;
+  --border-2:   #CDD4DF;
+  --muted:      #64748B;
+  --muted-2:    #94A3B8;
+  --sidebar-w:  248px;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow:hidden;}
+
+body{
+  font-family:'Inter',sans-serif;
+  background:var(--surface-2);
+  color:var(--ink);
+  display:flex;
+}
+
+/* ── SIDEBAR ─────────────────────────────────── */
+.sb{
+  width:var(--sidebar-w);
+  background:var(--ink);
+  display:flex;flex-direction:column;
+  flex-shrink:0;height:100vh;overflow-y:auto;
+}
+.sb-top{
+  padding:22px 18px 16px;
+  border-bottom:1px solid rgba(255,255,255,0.07);
+}
+.sb-brand{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.sb-mark{
+  width:32px;height:32px;border-radius:8px;
+  background:linear-gradient(135deg,var(--teal),#059669);
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;
+}
+.sb-name{
+  font-family:'Sora',sans-serif;font-weight:800;font-size:17px;color:#fff;
+}
+.sb-badge{
+  font-size:9px;font-weight:700;letter-spacing:1px;
+  background:rgba(15,155,142,0.25);color:var(--teal-hi);
+  padding:2px 8px;border-radius:10px;border:1px solid rgba(15,155,142,0.3);
+  text-transform:uppercase;
+}
+.sb-user{display:flex;align-items:center;gap:10px;}
+.sb-avatar{
+  width:32px;height:32px;border-radius:8px;
+  background:linear-gradient(135deg,var(--teal),var(--sky));
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:800;color:#fff;flex-shrink:0;
+}
+.sb-uname{font-size:12px;font-weight:600;color:#fff;}
+.sb-urole{font-size:10.5px;color:rgba(255,255,255,0.4);}
+
+.sb-nav{padding:12px 10px;flex:1;}
+.sb-section-lbl{
+  font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+  color:rgba(255,255,255,0.25);padding:10px 10px 6px;
+}
+.nav-link{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 11px;border-radius:8px;margin-bottom:1px;
+  cursor:pointer;transition:all .15s;
+  color:rgba(255,255,255,0.5);font-size:13px;font-weight:500;
+  position:relative;
+}
+.nav-link:hover{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.85);}
+.nav-link.active{background:rgba(15,155,142,0.18);color:#fff;}
+.nav-link.active::before{
+  content:'';position:absolute;left:0;top:25%;bottom:25%;
+  width:3px;border-radius:0 2px 2px 0;background:var(--teal-hi);
+}
+.nav-icon{font-size:15px;width:18px;text-align:center;}
+.nav-pill{
+  margin-left:auto;background:rgba(232,160,32,0.2);color:var(--amber);
+  font-size:9.5px;font-weight:800;padding:2px 7px;border-radius:10px;
+}
+.nav-pill.alert{background:rgba(232,54,93,0.2);color:var(--rose);}
+.nav-pill.teal{background:rgba(15,155,142,0.2);color:var(--teal-hi);}
+
+/* ── MAIN ─────────────────────────────────────── */
+.main{flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+
+.topbar{
+  height:58px;background:var(--surface);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 26px;gap:14px;flex-shrink:0;
+}
+.tb-bread{
+  flex:1;font-size:12.5px;color:var(--muted);font-family:'Inter',sans-serif;
+}
+.tb-bread b{color:var(--ink);font-weight:700;}
+.tb-actions{display:flex;align-items:center;gap:10px;}
+.icon-btn{
+  width:34px;height:34px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--surface-2);border:1px solid var(--border);
+  cursor:pointer;font-size:14px;transition:background .15s;position:relative;
+}
+.icon-btn:hover{background:var(--border);}
+.alert-dot{
+  position:absolute;top:7px;right:7px;
+  width:6px;height:6px;background:var(--rose);border-radius:50%;border:1.5px solid #fff;
+}
+.search-bar{
+  display:flex;align-items:center;gap:8px;
+  background:var(--surface-2);border:1px solid var(--border);
+  border-radius:8px;padding:0 12px;height:34px;width:220px;
+}
+.search-bar input{
+  border:none;background:transparent;outline:none;
+  font-size:12.5px;font-family:'Inter',sans-serif;color:var(--ink);width:100%;
+}
+
+.scroll-area{flex:1;overflow-y:auto;padding:24px 26px;}
+
+/* ── PAGE ─────────────────────────────────────── */
+.page{display:none;}
+.page.active{display:block;animation:fadeUp .2s ease-out;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── PAGE HEADER ──────────────────────────────── */
+.ph{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px;}
+.ph-left .ph-title{
+  font-family:'Sora',sans-serif;font-size:20px;font-weight:800;
+  color:var(--ink);letter-spacing:-.3px;
+}
+.ph-left .ph-sub{font-size:12.5px;color:var(--muted);margin-top:3px;}
+
+/* ── CARDS ─────────────────────────────────────── */
+.card{
+  background:var(--surface);border-radius:12px;
+  border:1px solid var(--border);padding:20px;
+}
+.card-sm{padding:16px;}
+.card-title{
+  font-family:'Sora',sans-serif;font-weight:700;font-size:13px;
+  color:var(--ink);margin-bottom:2px;
+}
+.card-sub{font-size:11.5px;color:var(--muted);margin-bottom:14px;}
+
+/* ── KPI ────────────────────────────────────────── */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+.kpi-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:12px;
+  padding:18px 20px;display:flex;flex-direction:column;gap:4px;
+  transition:box-shadow .15s;cursor:default;
+}
+.kpi-card:hover{box-shadow:0 4px 16px rgba(11,17,32,.07);}
+.kpi-label{font-size:11.5px;color:var(--muted);font-weight:500;letter-spacing:.1px;}
+.kpi-value{
+  font-family:'Sora',sans-serif;font-size:26px;font-weight:800;
+  color:var(--ink);letter-spacing:-.5px;
+}
+.kpi-delta{font-size:11px;font-weight:600;display:flex;align-items:center;gap:4px;}
+.kpi-delta.up{color:var(--teal);}
+.kpi-delta.dn{color:var(--rose);}
+.kpi-icon{
+  width:34px;height:34px;border-radius:9px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;margin-bottom:8px;
+}
+
+/* ── GRID LAYOUTS ───────────────────────────────── */
+.g2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+.g-21{display:grid;grid-template-columns:2fr 1fr;gap:16px;}
+.g-12{display:grid;grid-template-columns:1fr 2fr;gap:16px;}
+.mt14{margin-top:14px;}
+.mt20{margin-top:20px;}
+
+/* ── TABLE ──────────────────────────────────────── */
+.tbl-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+thead th{
+  text-align:left;font-size:10.5px;font-weight:700;
+  letter-spacing:.6px;color:var(--muted);text-transform:uppercase;
+  padding:9px 14px;border-bottom:1px solid var(--border);
+  background:var(--surface-2);white-space:nowrap;
+}
+tbody td{
+  padding:12px 14px;font-size:12.5px;border-bottom:1px solid var(--border);
+  color:var(--ink);vertical-align:middle;
+}
+tbody tr:hover{background:#F9FAFB;}
+tbody tr:last-child td{border-bottom:none;}
+.td-mono{font-family:'DM Mono',monospace;font-size:11.5px;color:var(--muted);}
+
+/* ── BADGE ──────────────────────────────────────── */
+.badge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 9px;border-radius:20px;font-size:10.5px;font-weight:700;
+  white-space:nowrap;
+}
+.b-teal{background:rgba(15,155,142,0.1);color:var(--teal);}
+.b-amber{background:var(--amber-lo);color:#92670A;}
+.b-rose{background:var(--rose-lo);color:var(--rose);}
+.b-violet{background:var(--violet-lo);color:var(--violet);}
+.b-sky{background:var(--sky-lo);color:var(--sky);}
+.b-gray{background:#F1F5F9;color:var(--muted);}
+.b-green{background:#DCFCE7;color:#16A34A;}
+
+/* ── BUTTON ─────────────────────────────────────── */
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:8px 16px;border-radius:8px;font-size:12.5px;font-weight:600;
+  cursor:pointer;border:none;transition:all .15s;
+  font-family:'Inter',sans-serif;
+}
+.btn-primary{background:var(--ink);color:#fff;}
+.btn-primary:hover{background:var(--ink-mid);}
+.btn-teal{background:var(--teal);color:#fff;}
+.btn-teal:hover{background:#0B7A71;}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--ink);}
+.btn-outline:hover{border-color:var(--teal);color:var(--teal);}
+.btn-rose{background:var(--rose-lo);color:var(--rose);}
+.btn-rose:hover{background:var(--rose);color:#fff;}
+.btn-amber{background:var(--amber-lo);color:#92670A;}
+.btn-amber:hover{background:var(--amber);color:#fff;}
+.btn-ghost{background:transparent;color:var(--muted);border:none;font-size:12px;}
+.btn-ghost:hover{color:var(--ink);}
+.btn-sm{padding:5px 12px;font-size:11.5px;border-radius:7px;}
+.btn-xs{padding:3px 9px;font-size:11px;border-radius:6px;}
+
+/* ── PROGRESS ─────────────────────────────────── */
+.prog-wrap{background:var(--surface-2);border-radius:6px;height:6px;overflow:hidden;}
+.prog-bar{height:100%;border-radius:6px;transition:width .4s;}
+
+/* ── AVATAR ─────────────────────────────────────── */
+.av{
+  width:32px;height:32px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11.5px;font-weight:800;color:#fff;flex-shrink:0;
+}
+.av-sm{width:26px;height:26px;border-radius:6px;font-size:10px;}
+
+/* ── STATUS DOT ─────────────────────────────────── */
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.dot-teal{background:var(--teal);}
+.dot-amber{background:var(--amber);}
+.dot-rose{background:var(--rose);}
+.dot-gray{background:var(--muted-2);}
+
+/* ── TABS ────────────────────────────────────────── */
+.tab-bar{
+  display:flex;gap:2px;background:var(--surface-2);
+  border-radius:9px;padding:3px;margin-bottom:18px;
+  width:fit-content;
+}
+.tab-btn{
+  padding:6px 16px;border-radius:7px;border:none;
+  background:transparent;font-size:12.5px;font-weight:600;
+  color:var(--muted);cursor:pointer;transition:all .15s;
+  font-family:'Inter',sans-serif;white-space:nowrap;
+}
+.tab-btn.active{background:var(--surface);color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.07);}
+
+/* ── REVIEW CARD ─────────────────────────────────── */
+.review-card{
+  border:1.5px solid var(--border);border-radius:12px;padding:18px;
+  margin-bottom:14px;transition:border-color .15s,box-shadow .15s;
+}
+.review-card:hover{border-color:var(--border-2);box-shadow:0 2px 12px rgba(0,0,0,.05);}
+.review-card.pending{border-left:3px solid var(--amber);}
+.review-card.approved{border-left:3px solid var(--teal);opacity:.85;}
+.review-card.rejected{border-left:3px solid var(--rose);opacity:.8;}
+
+/* ── STAT MINI ───────────────────────────────────── */
+.stat-mini{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 14px;border-radius:9px;background:var(--surface-2);
+}
+.sm-val{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--ink);}
+.sm-lbl{font-size:11px;color:var(--muted);}
+
+/* ── CHART BARS ──────────────────────────────────── */
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:90px;padding:4px 0;}
+.bar-col{display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;}
+.bar-seg{width:100%;border-radius:4px 4px 0 0;min-height:3px;}
+.bar-seg:hover{opacity:.75;cursor:pointer;}
+.blbl{font-size:9.5px;color:var(--muted);}
+
+/* ── TIMELINE ─────────────────────────────────────── */
+.tl{position:relative;padding-left:22px;}
+.tl::before{content:'';position:absolute;left:7px;top:0;bottom:0;width:1.5px;background:var(--border);}
+.tl-item{position:relative;margin-bottom:14px;}
+.tl-dot{position:absolute;left:-18px;top:3px;width:10px;height:10px;border-radius:50%;background:var(--teal);border:2px solid var(--surface);}
+.tl-dot.wait{background:var(--amber);}
+.tl-dot.muted{background:var(--border-2);}
+.tl-title{font-size:12.5px;font-weight:600;color:var(--ink);}
+.tl-meta{font-size:11px;color:var(--muted);margin-top:1px;}
+
+/* ── NOTIF ROW ─────────────────────────────────────── */
+.notif-row{display:flex;gap:10px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--border);}
+.notif-row:last-child{border-bottom:none;}
+.notif-ic{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+.notif-txt{font-size:12px;line-height:1.5;color:var(--ink);}
+.notif-t{font-size:10.5px;color:var(--muted);margin-top:1px;}
+
+/* ── USER ROW (NPO / Influencer) ──────────────────── */
+.entity-row{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 14px;border-radius:9px;
+  border:1px solid var(--border);margin-bottom:8px;
+  transition:background .12s;cursor:pointer;
+}
+.entity-row:hover{background:var(--surface-2);}
+.entity-info{flex:1;}
+.entity-name{font-size:13px;font-weight:600;color:var(--ink);}
+.entity-meta{font-size:11px;color:var(--muted);margin-top:1px;}
+.entity-right{display:flex;align-items:center;gap:10px;}
+
+/* ── BREADCRUMB SEPARATOR ──────────────────────────── */
+.sep{color:var(--muted-2);margin:0 4px;}
+
+/* ── TAG ───────────────────────────────────────────── */
+.tag{
+  display:inline-block;padding:2px 8px;border-radius:5px;
+  background:rgba(15,155,142,0.09);color:var(--teal);
+  font-size:10.5px;font-weight:700;margin:2px;
+}
+
+/* ── NPO DETAIL PANEL ──────────────────────────────── */
+.detail-panel{
+  background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;
+}
+.dp-header{
+  padding:20px;border-bottom:1px solid var(--border);
+  background:linear-gradient(135deg,var(--ink) 0%,var(--ink-mid) 100%);
+}
+
+/* ── PROJECT STATUS PILL ───────────────────────────── */
+.proj-status{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;}
+
+/* ── SCROLLBAR ─────────────────────────────────────── */
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(100,116,139,.2);border-radius:3px;}
+
+/* ── FLEX UTILS ────────────────────────────────────── */
+.flex{display:flex;}.ic{align-items:center;}.jb{justify-content:space-between;}.wrap{flex-wrap:wrap;}
+.gap6{gap:6px;}.gap10{gap:10px;}.gap12{gap:12px;}.gap14{gap:14px;}
+
+/* ── FUND METER ────────────────────────────────────── */
+.fund-raised{font-family:'Sora',sans-serif;font-size:16px;font-weight:800;color:var(--teal);}
+.fund-goal{font-size:11px;color:var(--muted);}
+</style>
+</head>
+<body>
+
+<!-- ══════ SIDEBAR ══════ -->
+<aside class="sb">
+  <div class="sb-top">
+    <div class="sb-brand">
+      <div class="sb-mark">🌐</div>
+      <span class="sb-name">SOCIA</span>
+      <span class="sb-badge">Admin</span>
+    </div>
+    <div class="sb-user">
+      <div class="sb-avatar">AD</div>
+      <div>
+        <div class="sb-uname">Alex Durant</div>
+        <div class="sb-urole">Platform Administrator</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sb-nav">
+    <div class="sb-section-lbl">Overview</div>
+    <div class="nav-link active" onclick="showPage('dashboard')">
+      <span class="nav-icon">🏠</span> Dashboard
+    </div>
+    <div class="nav-link" onclick="showPage('activity')">
+      <span class="nav-icon">📡</span> Live Activity
+      <span class="nav-pill teal">Live</span>
+    </div>
+
+    <div class="sb-section-lbl">Organizations</div>
+    <div class="nav-link" onclick="showPage('npo-list')">
+      <span class="nav-icon">🏢</span> NPO Registry
+      <span class="nav-pill">47</span>
+    </div>
+    <div class="nav-link" onclick="showPage('npo-detail')">
+      <span class="nav-icon">📋</span> NPO Detail View
+    </div>
+
+    <div class="sb-section-lbl">Creators</div>
+    <div class="nav-link" onclick="showPage('creator-list')">
+      <span class="nav-icon">🤳</span> Creator Registry
+      <span class="nav-pill">312</span>
+    </div>
+    <div class="nav-link" onclick="showPage('creator-detail')">
+      <span class="nav-icon">📊</span> Creator Detail View
+    </div>
+
+    <div class="sb-section-lbl">Projects</div>
+    <div class="nav-link" onclick="showPage('proj-review')">
+      <span class="nav-icon">🔍</span> Submission Review
+      <span class="nav-pill alert">8 new</span>
+    </div>
+    <div class="nav-link" onclick="showPage('proj-live')">
+      <span class="nav-icon">✅</span> Live Projects
+      <span class="nav-pill teal">34</span>
+    </div>
+
+    <div class="sb-section-lbl">Platform</div>
+    <div class="nav-link" onclick="showPage('payouts')">
+      <span class="nav-icon">💵</span> Payouts & Fees
+    </div>
+    <div class="nav-link" onclick="showPage('compliance')">
+      <span class="nav-icon">🛡️</span> Compliance
+      <span class="nav-pill alert">3</span>
+    </div>
+  </div>
+</aside>
+
+<!-- ══════ MAIN ══════ -->
+<div class="main">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="tb-bread" id="breadcrumb">
+      <b>Dashboard</b>
+    </div>
+    <div class="tb-actions">
+      <div class="search-bar">
+        <span style="color:var(--muted)">🔍</span>
+        <input placeholder="Search NPOs, creators, projects…" />
+      </div>
+      <div class="icon-btn">🔔<span class="alert-dot"></span></div>
+      <div class="icon-btn">⚙️</div>
+      <div class="sb-avatar" style="cursor:pointer">AD</div>
+    </div>
+  </header>
+
+  <!-- ══════════════════════ SCROLL AREA ══════════════════════ -->
+  <div class="scroll-area">
+
+  <!-- ═══════ PAGE: DASHBOARD ═══════ -->
+  <div class="page active" id="page-dashboard">
+
+    <div class="ph">
+      <div class="ph-left">
+        <div class="ph-title">Platform Overview</div>
+        <div class="ph-sub">Socia admin control center · Last updated 4 min ago</div>
+      </div>
+      <div class="flex ic gap10">
+        <select style="font-size:12px;padding:6px 12px;border:1px solid var(--border);border-radius:7px;background:var(--surface);color:var(--ink);cursor:pointer">
+          <option>Last 30 days</option>
+          <option>Last 90 days</option>
+          <option>All time</option>
+        </select>
+        <button class="btn btn-teal btn-sm">⬇ Export Report</button>
+      </div>
+    </div>
+
+    <!-- KPI row -->
+    <div class="kpi-grid">
+      <div class="kpi-card" onclick="showPage('npo-list')">
+        <div class="kpi-icon" style="background:rgba(15,155,142,0.1)">🏢</div>
+        <div class="kpi-label">Registered NPOs</div>
+        <div class="kpi-value">47</div>
+        <div class="kpi-delta up">↑ 6 this month</div>
+      </div>
+      <div class="kpi-card" onclick="showPage('creator-list')">
+        <div class="kpi-icon" style="background:rgba(124,58,237,0.1)">🤳</div>
+        <div class="kpi-label">Active Creators</div>
+        <div class="kpi-value">312</div>
+        <div class="kpi-delta up">↑ 28 this month</div>
+      </div>
+      <div class="kpi-card" onclick="showPage('proj-live')">
+        <div class="kpi-icon" style="background:rgba(14,165,233,0.1)">📋</div>
+        <div class="kpi-label">Live Projects</div>
+        <div class="kpi-value">34</div>
+        <div class="kpi-delta up">↑ 4 this week</div>
+      </div>
+      <div class="kpi-card" onclick="showPage('proj-review')">
+        <div class="kpi-icon" style="background:rgba(232,160,32,0.12)">⏳</div>
+        <div class="kpi-label">Pending Review</div>
+        <div class="kpi-value">8</div>
+        <div class="kpi-delta dn">Awaiting action</div>
+      </div>
+    </div>
+
+    <div class="g2" style="margin-bottom:16px">
+      <!-- Funds raised across platform -->
+      <div class="card">
+        <div class="flex jb ic" style="margin-bottom:14px">
+          <div>
+            <div class="card-title">Platform Donations Raised</div>
+            <div class="card-sub" style="margin-bottom:0">Across all live Socia campaigns</div>
+          </div>
+          <span class="badge b-teal">All time</span>
+        </div>
+        <div style="font-family:'Sora',sans-serif;font-size:32px;font-weight:800;color:var(--teal);margin-bottom:4px">$2.84M</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:16px">↑ $184K raised this month alone</div>
+        <div class="bar-chart">
+          <div class="bar-col"><div class="bar-seg" style="height:38%;background:var(--teal);opacity:.3"></div><div class="blbl">Oct</div></div>
+          <div class="bar-col"><div class="bar-seg" style="height:51%;background:var(--teal);opacity:.4"></div><div class="blbl">Nov</div></div>
+          <div class="bar-col"><div class="bar-seg" style="height:43%;background:var(--teal);opacity:.4"></div><div class="blbl">Dec</div></div>
+          <div class="bar-col"><div class="bar-seg" style="height:60%;background:var(--teal);opacity:.6"></div><div class="blbl">Jan</div></div>
+          <div class="bar-col"><div class="bar-seg" style="height:72%;background:var(--teal);opacity:.7"></div><div class="blbl">Feb</div></div>
+          <div class="bar-col"><div class="bar-seg" style="height:68%;background:var(--teal);opacity:.75"></div><div class="blbl">Mar</div></div>
+          <div class="bar-col"><div class="bar-seg" style="height:95%;background:var(--teal)"></div><div class="blbl">Apr</div></div>
+        </div>
+      </div>
+
+      <!-- Cause breakdown -->
+      <div class="card">
+        <div class="card-title">Projects by Cause Category</div>
+        <div class="card-sub">Distribution of all live campaigns</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div>
+            <div class="flex jb ic" style="font-size:12px;margin-bottom:4px"><span>🏫 Education</span><span style="font-weight:700">12 projects · 35%</span></div>
+            <div class="prog-wrap"><div class="prog-bar" style="width:35%;background:var(--sky)"></div></div>
+          </div>
+          <div>
+            <div class="flex jb ic" style="font-size:12px;margin-bottom:4px"><span>🍽️ Food Relief</span><span style="font-weight:700">8 projects · 24%</span></div>
+            <div class="prog-wrap"><div class="prog-bar" style="width:24%;background:var(--amber)"></div></div>
+          </div>
+          <div>
+            <div class="flex jb ic" style="font-size:12px;margin-bottom:4px"><span>🏥 Healthcare</span><span style="font-weight:700">6 projects · 18%</span></div>
+            <div class="prog-wrap"><div class="prog-bar" style="width:18%;background:var(--rose)"></div></div>
+          </div>
+          <div>
+            <div class="flex jb ic" style="font-size:12px;margin-bottom:4px"><span>🤝 Refugees</span><span style="font-weight:700">5 projects · 15%</span></div>
+            <div class="prog-wrap"><div class="prog-bar" style="width:15%;background:var(--violet)"></div></div>
+          </div>
+          <div>
+            <div class="flex jb ic" style="font-size:12px;margin-bottom:4px"><span>♻️ Environment</span><span style="font-weight:700">3 projects · 8%</span></div>
+            <div class="prog-wrap"><div class="prog-bar" style="width:8%;background:var(--teal)"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="g-21">
+      <!-- Recent submissions needing action -->
+      <div class="card">
+        <div class="flex jb ic" style="margin-bottom:14px">
+          <div>
+            <div class="card-title">Pending Project Submissions</div>
+            <div class="card-sub" style="margin-bottom:0">8 waiting for review · oldest is 3 days</div>
+          </div>
+          <button class="btn btn-amber btn-sm" onclick="showPage('proj-review')">Review All →</button>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Project</th><th>NPO</th><th>Submitted</th><th>Category</th><th>Goal</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr>
+                <td style="font-weight:600">Clean Water Wells – Bangladesh</td>
+                <td>charity: water</td>
+                <td class="td-mono">Apr 22</td>
+                <td><span class="badge b-teal">Environment</span></td>
+                <td style="font-weight:700">$60K</td>
+                <td><button class="btn btn-amber btn-xs" onclick="showPage('proj-review')">Review</button></td>
+              </tr>
+              <tr>
+                <td style="font-weight:600">Vaccination Drive – W. Africa</td>
+                <td>UNICEF</td>
+                <td class="td-mono">Apr 21</td>
+                <td><span class="badge b-rose">Healthcare</span></td>
+                <td style="font-weight:700">$90K</td>
+                <td><button class="btn btn-amber btn-xs" onclick="showPage('proj-review')">Review</button></td>
+              </tr>
+              <tr>
+                <td style="font-weight:600">Girls' Education Fund – Nepal</td>
+                <td>Room to Read</td>
+                <td class="td-mono">Apr 20</td>
+                <td><span class="badge b-sky">Education</span></td>
+                <td style="font-weight:700">$45K</td>
+                <td><button class="btn btn-amber btn-xs" onclick="showPage('proj-review')">Review</button></td>
+              </tr>
+              <tr>
+                <td style="font-weight:600">Refugee Housing – Jordan</td>
+                <td>IRC</td>
+                <td class="td-mono">Apr 20</td>
+                <td><span class="badge b-violet">Refugees</span></td>
+                <td style="font-weight:700">$120K</td>
+                <td><button class="btn btn-amber btn-xs" onclick="showPage('proj-review')">Review</button></td>
+              </tr>
+              <tr>
+                <td style="font-weight:600">Literacy First – Malawi</td>
+                <td>Pencils of Promise</td>
+                <td class="td-mono">Apr 19</td>
+                <td><span class="badge b-sky">Education</span></td>
+                <td style="font-weight:700">$38K</td>
+                <td><button class="btn btn-amber btn-xs" onclick="showPage('proj-review')">Review</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Activity feed -->
+      <div class="card">
+        <div class="card-title" style="margin-bottom:12px">Recent Activity</div>
+        <div class="notif-row">
+          <div class="notif-ic" style="background:rgba(15,155,142,0.1)">✅</div>
+          <div><div class="notif-txt"><b>Ghana School Build</b> reached 85% of funding goal</div><div class="notif-t">12 min ago</div></div>
+        </div>
+        <div class="notif-row">
+          <div class="notif-ic" style="background:rgba(124,58,237,0.1)">🤳</div>
+          <div><div class="notif-txt">New creator <b>@sofia.creates</b> registered &amp; KYC passed</div><div class="notif-t">1 hour ago</div></div>
+        </div>
+        <div class="notif-row">
+          <div class="notif-ic" style="background:rgba(232,160,32,0.1)">📋</div>
+          <div><div class="notif-txt"><b>IRC</b> submitted "Refugee Housing – Jordan" for review</div><div class="notif-t">2 hours ago</div></div>
+        </div>
+        <div class="notif-row">
+          <div class="notif-ic" style="background:rgba(14,165,233,0.1)">🏢</div>
+          <div><div class="notif-txt"><b>Habitat for Humanity</b> completed NPO registration</div><div class="notif-t">3 hours ago</div></div>
+        </div>
+        <div class="notif-row">
+          <div class="notif-ic" style="background:rgba(232,54,93,0.1)">⚠️</div>
+          <div><div class="notif-txt">Content revision flag on <b>Feed the Future</b> story set</div><div class="notif-t">5 hours ago</div></div>
+        </div>
+        <div class="notif-row">
+          <div class="notif-ic" style="background:rgba(15,155,142,0.1)">💵</div>
+          <div><div class="notif-txt">$4,820 in creator stipends processed · 6 recipients</div><div class="notif-t">Yesterday</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ PAGE: LIVE ACTIVITY ═══════ -->
+  <div class="page" id="page-activity">
+    <div class="ph"><div class="ph-left"><div class="ph-title">Live Activity</div><div class="ph-sub">Real-time platform events</div></div><span class="badge b-teal" style="font-size:12px;padding:5px 12px">● Live</span></div>
+
+    <div class="g4" style="margin-bottom:20px">
+      <div class="stat-mini"><div class="kpi-icon" style="background:rgba(15,155,142,0.1);margin-bottom:0">🌐</div><div><div class="sm-val">1,240</div><div class="sm-lbl">Sessions online now</div></div></div>
+      <div class="stat-mini"><div class="kpi-icon" style="background:rgba(14,165,233,0.1);margin-bottom:0">💵</div><div><div class="sm-val">$8,400</div><div class="sm-lbl">Raised in last hour</div></div></div>
+      <div class="stat-mini"><div class="kpi-icon" style="background:rgba(124,58,237,0.1);margin-bottom:0">📤</div><div><div class="sm-val">14</div><div class="sm-lbl">Posts submitted today</div></div></div>
+      <div class="stat-mini"><div class="kpi-icon" style="background:rgba(232,160,32,0.1);margin-bottom:0">⏳</div><div><div class="sm-val">8</div><div class="sm-lbl">Reviews pending</div></div></div>
+    </div>
+
+    <div class="g2">
+      <div class="card">
+        <div class="card-title" style="margin-bottom:14px">Event Stream</div>
+        <div class="tl">
+          <div class="tl-item"><div class="tl-dot"></div><div class="tl-title">@jamie.forchange submitted Instagram Reel — Feed the Future</div><div class="tl-meta">2 min ago</div></div>
+          <div class="tl-item"><div class="tl-dot"></div><div class="tl-title">charity: water project "Clean Water Wells" submitted for admin review</div><div class="tl-meta">11 min ago</div></div>
+          <div class="tl-item"><div class="tl-dot"></div><div class="tl-title">$1,200 donated via @sofia.creates link — Ghana School Build</div><div class="tl-meta">18 min ago</div></div>
+          <div class="tl-item"><div class="tl-dot wait"></div><div class="tl-title">Compliance flag — HopeForward Foundation bank re-verification requested</div><div class="tl-meta">34 min ago</div></div>
+          <div class="tl-item"><div class="tl-dot"></div><div class="tl-title">@noah.impact accepted "Mobile Clinics Kenya" campaign</div><div class="tl-meta">41 min ago</div></div>
+          <div class="tl-item"><div class="tl-dot"></div><div class="tl-title">UNICEF submitted "Vaccination Drive – W. Africa" for review</div><div class="tl-meta">2 hours ago</div></div>
+          <div class="tl-item"><div class="tl-dot muted"></div><div class="tl-title">$8,400 creator stipend batch processed · 6 creators</div><div class="tl-meta">3 hours ago</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="margin-bottom:14px">Hourly Donations (Today)</div>
+        <div class="bar-chart" style="height:110px">
+          <div class="bar-col"><div class="bar-seg" style="height:30%;background:var(--teal);opacity:.5"></div><div class="blbl">6am</div></div>
+          <div class="bar-col"><div class="bar-seg" style="height:44%;background:var(--teal);opacity:.6"></div><div class="blbl">8am</div></div>
+          <div class="bar-col"><div class="bar-seg" style="height:60%;background:var(--teal);opacity:.7"></div><div class="blbl">10am</div></div>
+          <div class="bar-col"><div class="bar-seg" style="height:78%;background:var(--teal);opacity:.8"></div><div class="blbl">12pm</div></div>
+          <div class="bar-col"><div class="bar-seg" style="height:55%;background:var(--teal);opacity:.7"></div><div class="blbl">2pm</div></div>
+          <div class="bar-col"><div class="bar-seg" style="height:90%;background:var(--teal)"></div><div class="blbl">4pm</div></div>
+          <div class="bar-col"><div class="bar-seg" style="height:70%;background:var(--teal);opacity:.8"></div><div class="blbl">6pm</div></div>
+          <div class="bar-col"><div class="bar-seg" style="height:40%;background:var(--teal);opacity:.5"></div><div class="blbl">Now</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ PAGE: NPO LIST ═══════ -->
+  <div class="page" id="page-npo-list">
+    <div class="ph">
+      <div class="ph-left"><div class="ph-title">NPO Registry</div><div class="ph-sub">All registered nonprofit organizations on Socia</div></div>
+      <div class="flex ic gap10">
+        <select style="font-size:12px;padding:6px 12px;border:1px solid var(--border);border-radius:7px;background:var(--surface);color:var(--ink)">
+          <option>All Status</option><option>Verified</option><option>Pending</option><option>Flagged</option>
+        </select>
+        <button class="btn btn-teal btn-sm">⬇ Export</button>
+      </div>
+    </div>
+
+    <div class="g4" style="margin-bottom:20px">
+      <div class="kpi-card"><div class="kpi-icon" style="background:rgba(15,155,142,0.1)">🏢</div><div class="kpi-label">Total NPOs</div><div class="kpi-value">47</div><div class="kpi-delta up">↑ 6 this month</div></div>
+      <div class="kpi-card"><div class="kpi-icon" style="background:rgba(15,155,142,0.1)">✅</div><div class="kpi-label">Fully Verified</div><div class="kpi-value">41</div><div class="kpi-delta up">87% rate</div></div>
+      <div class="kpi-card"><div class="kpi-icon" style="background:rgba(232,160,32,0.12)">⏳</div><div class="kpi-label">Pending KYC</div><div class="kpi-value">4</div><div class="kpi-delta dn">Action needed</div></div>
+      <div class="kpi-card"><div class="kpi-icon" style="background:rgba(232,54,93,0.1)">🚩</div><div class="kpi-label">Compliance Flags</div><div class="kpi-value">2</div><div class="kpi-delta dn">Review required</div></div>
+    </div>
+
+    <div class="card">
+      <div class="tab-bar" style="margin-bottom:16px">
+        <button class="tab-btn active">All (47)</button>
+        <button class="tab-btn">Verified (41)</button>
+        <button class="tab-btn">Pending KYC (4)</button>
+        <button class="tab-btn">Flagged (2)</button>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr><th>Organization</th><th>EIN / Tax ID</th><th>Category</th><th>Projects</th><th>Total Raised</th><th>Registered</th><th>Status</th><th>Action</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><div class="flex ic gap10"><div class="av" style="background:linear-gradient(135deg,#0F9B8E,#059669)">HP</div><div><div style="font-weight:600">HopeForward Foundation</div><div style="font-size:11px;color:var(--muted)">hopeforward.org</div></div></div></td>
+              <td class="td-mono">47-1234567</td>
+              <td><span class="tag">Education</span><span class="tag">Food</span></td>
+              <td style="font-weight:700">4</td>
+              <td style="font-weight:700;color:var(--teal)">$142K</td>
+              <td class="td-mono">Jan 12, 2026</td>
+              <td><span class="badge b-teal">● Verified</span></td>
+              <td><button class="btn btn-outline btn-xs" onclick="showPage('npo-detail')">View →</button></td>
+            </tr>
+            <tr>
+              <td><div class="flex ic gap10"><div class="av" style="background:linear-gradient(135deg,#0EA5E9,#3B82F6)">CW</div><div><div style="font-weight:600">charity: water</div><div style="font-size:11px;color:var(--muted)">charitywater.org</div></div></div></td>
+              <td class="td-mono">20-4774697</td>
+              <td><span class="tag">Environment</span></td>
+              <td style="font-weight:700">2</td>
+              <td style="font-weight:700;color:var(--teal)">$98K</td>
+              <td class="td-mono">Feb 3, 2026</td>
+              <td><span class="badge b-teal">● Verified</span></td>
+              <td><button class="btn btn-outline btn-xs" onclick="showPage('npo-detail')">View →</button></td>
+            </tr>
+            <tr>
+              <td><div class="flex ic gap10"><div class="av" style="background:linear-gradient(135deg,#7C3AED,#4F46E5)">IR</div><div><div style="font-weight:600">International Rescue Committee</div><div style="font-size:11px;color:var(--muted)">rescue.org</div></div></div></td>
+              <td class="td-mono">13-5660870</td>
+              <td><span class="tag">Refugees</span><span class="tag">Legal</span></td>
+              <td style="font-weight:700">3</td>
+              <td style="font-weight:700;color:var(--teal)">$210K</td>
+              <td class="td-mono">Dec 18, 2025</td>
+              <td><span class="badge b-teal">● Verified</span></td>
+              <td><button class="btn btn-outline btn-xs" onclick="showPage('npo-detail')">View →</button></td>
+            </tr>
+            <tr>
+              <td><div class="flex ic gap10"><div class="av" style="background:linear-gradient(135deg,#E8A020,#D97706)">PP</div><div><div style="font-weight:600">Pencils of Promise</div><div style="font-size:11px;color:var(--muted)">pencilsofpromise.org</div></div></div></td>
+              <td class="td-mono">26-1714280</td>
+              <td><span class="tag">Education</span></td>
+              <td style="font-weight:700">5</td>
+              <td style="font-weight:700;color:var(--teal)">$184K</td>
+              <td class="td-mono">Nov 5, 2025</td>
+              <td><span class="badge b-teal">● Verified</span></td>
+              <td><button class="btn btn-outline btn-xs" onclick="showPage('npo-detail')">View →</button></td>
+            </tr>
+            <tr>
+              <td><div class="flex ic gap10"><div class="av" style="background:linear-gradient(135deg,#E8365D,#BE123C)">DW</div><div><div style="font-weight:600">Doctors Without Borders</div><div style="font-size:11px;color:var(--muted)">msf.org</div></div></div></td>
+              <td class="td-mono">13-3433452</td>
+              <td><span class="tag">Healthcare</span></td>
+              <td style="font-weight:700">2</td>
+              <td style="font-weight:700;color:var(--teal)">$157K</td>
+              <td class="td-mono">Mar 2, 2026</td>
+              <td><span class="badge b-teal">● Verified</span></td>
+              <td><button class="btn btn-outline btn-xs" onclick="showPage('npo-detail')">View →</button></td>
+            </tr>
+            <tr>
+              <td><div class="flex ic gap10"><div class="av" style="background:linear-gradient(135deg,#2E7D32,#43A047)">HH</div><div><div style="font-weight:600">Habitat for Humanity</div><div style="font-size:11px;color:var(--muted)">habitat.org</div></div></div></td>
+              <td class="td-mono">91-1914868</td>
+              <td><span class="tag">Housing</span></td>
+              <td style="font-weight:700">1</td>
+              <td style="font-weight:700;color:var(--teal)">$9.5K</td>
+              <td class="td-mono">Apr 18, 2026</td>
+              <td><span class="badge b-amber">⏳ Pending Bank</span></td>
+              <td><button class="btn btn-outline btn-xs" onclick="showPage('npo-detail')">View →</button></td>
+            </tr>
+            <tr>
+              <td><div class="flex ic gap10"><div class="av" style="background:linear-gradient(135deg,#0EA5E9,#0284C7)">UN</div><div><div style="font-weight:600">UNICEF</div><div style="font-size:11px;color:var(--muted)">unicef.org</div></div></div></td>
+              <td class="td-mono">13-1760110</td>
+              <td><span class="tag">Children</span><span class="tag">Healthcare</span></td>
+              <td style="font-weight:700">2</td>
+              <td style="font-weight:700;color:var(--teal)">$63K</td>
+              <td class="td-mono">Apr 20, 2026</td>
+              <td><span class="badge b-amber">⏳ KYC Review</span></td>
+              <td><button class="btn btn-outline btn-xs" onclick="showPage('npo-detail')">View →</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ PAGE: NPO DETAIL ═══════ -->
+  <div class="page" id="page-npo-detail">
+    <div class="ph">
+      <div class="ph-left">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:4px">
+          <span style="cursor:pointer;color:var(--teal)" onclick="showPage('npo-list')">NPO Registry</span>
+          <span class="sep">/</span> <b>HopeForward Foundation</b>
+        </div>
+        <div class="ph-title">HopeForward Foundation</div>
+        <div class="ph-sub">Registered NPO · EIN 47-1234567 · Verified since Jan 12, 2026</div>
+      </div>
+      <div class="flex ic gap10">
+        <button class="btn btn-outline btn-sm">✉️ Contact NPO</button>
+        <button class="btn btn-rose btn-sm">🚩 Flag Account</button>
+      </div>
+    </div>
+
+    <div class="g-21">
+      <div>
+        <!-- NPO stats -->
+        <div class="g3" style="margin-bottom:16px">
+          <div class="stat-mini"><div><div class="sm-val">4</div><div class="sm-lbl">Total Projects</div></div></div>
+          <div class="stat-mini"><div><div class="sm-val" style="color:var(--teal)">$142K</div><div class="sm-lbl">Total Raised</div></div></div>
+          <div class="stat-mini"><div><div class="sm-val">23</div><div class="sm-lbl">Creators Engaged</div></div></div>
+        </div>
+
+        <!-- Projects table -->
+        <div class="card">
+          <div class="card-title" style="margin-bottom:14px">Projects by HopeForward Foundation</div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Project</th><th>Platform</th><th>Goal</th><th>Raised</th><th>Creators</th><th>Deadline</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td><div style="font-weight:600">🏫 Build a School in Rural Ghana</div></td>
+                  <td><span class="badge b-sky">Kickstarter</span></td>
+                  <td>$75K</td>
+                  <td><span style="font-weight:700;color:var(--teal)">$54.2K</span></td>
+                  <td>8</td>
+                  <td class="td-mono">May 10</td>
+                  <td><span class="badge b-teal">Live</span></td>
+                </tr>
+                <tr>
+                  <td><div style="font-weight:600">🍽️ Daily Meals for Homeless Families</div></td>
+                  <td><span class="badge b-amber">GoFundMe</span></td>
+                  <td>$100K</td>
+                  <td><span style="font-weight:700;color:var(--amber)">$88K</span></td>
+                  <td>11</td>
+                  <td class="td-mono">Apr 25</td>
+                  <td><span class="badge b-amber">Closing</span></td>
+                </tr>
+                <tr>
+                  <td><div style="font-weight:600">🤝 Legal Aid for Syrian Refugees</div></td>
+                  <td><span class="badge b-sky">Kickstarter</span></td>
+                  <td>$50K</td>
+                  <td><span style="color:var(--muted)">$0</span></td>
+                  <td>0</td>
+                  <td class="td-mono">May 20</td>
+                  <td><span class="badge b-gray">Draft</span></td>
+                </tr>
+                <tr>
+                  <td><div style="font-weight:600">💉 Mobile Clinics for Rural Kenya</div></td>
+                  <td><span class="badge b-violet">Indiegogo</span></td>
+                  <td>$150K</td>
+                  <td><span style="color:var(--muted)">$0</span></td>
+                  <td>0</td>
+                  <td class="td-mono">Jun 1</td>
+                  <td><span class="badge b-amber">In Review</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Content submissions from this NPO's campaigns -->
+        <div class="card mt14">
+          <div class="card-title" style="margin-bottom:12px">Creator Submissions — HopeForward Campaigns</div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Creator</th><th>Campaign</th><th>Deliverable</th><th>Submitted</th><th>Status</th><th>Action</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td>@jamie.forchange</td>
+                  <td>Feed the Future</td>
+                  <td>Instagram Reel</td>
+                  <td class="td-mono">Apr 15</td>
+                  <td><span class="badge b-teal">Approved</span></td>
+                  <td><button class="btn btn-ghost btn-xs">View</button></td>
+                </tr>
+                <tr>
+                  <td>@sofia.creates</td>
+                  <td>Ghana School Build</td>
+                  <td>YouTube Short</td>
+                  <td class="td-mono">Apr 18</td>
+                  <td><span class="badge b-amber">Reviewing</span></td>
+                  <td><button class="btn btn-ghost btn-xs">View</button></td>
+                </tr>
+                <tr>
+                  <td>@noah.impact</td>
+                  <td>Feed the Future</td>
+                  <td>Instagram Story Set</td>
+                  <td class="td-mono">Apr 16</td>
+                  <td><span class="badge b-rose">Revision</span></td>
+                  <td><button class="btn btn-ghost btn-xs">View</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right panel: NPO profile -->
+      <div>
+        <div class="card" style="margin-bottom:14px">
+          <div style="background:linear-gradient(135deg,var(--ink),var(--ink-mid));border-radius:9px;padding:16px;margin-bottom:14px;text-align:center">
+            <div class="av" style="background:linear-gradient(135deg,var(--teal),#059669);width:48px;height:48px;font-size:18px;margin:0 auto 10px;">HP</div>
+            <div style="font-family:'Sora',sans-serif;font-weight:700;font-size:15px;color:#fff">HopeForward Foundation</div>
+            <div style="font-size:11.5px;color:rgba(255,255,255,0.5);margin-top:2px">Chicago, IL · Est. 2011</div>
+            <div style="margin-top:10px"><span class="badge b-teal">✅ Fully Verified</span></div>
+          </div>
+          <div style="font-size:12.5px;display:flex;flex-direction:column;gap:8px">
+            <div class="flex jb"><span style="color:var(--muted)">Admin</span><span style="font-weight:600">Sarah Mitchell</span></div>
+            <div class="flex jb"><span style="color:var(--muted)">Email</span><span style="font-weight:600">sarah@hopeforward.org</span></div>
+            <div class="flex jb"><span style="color:var(--muted)">EIN</span><span class="td-mono">47-1234567</span></div>
+            <div class="flex jb"><span style="color:var(--muted)">Tax Form</span><span style="font-weight:600">501(c)(3)</span></div>
+            <div class="flex jb"><span style="color:var(--muted)">Bank</span><span style="font-weight:600">Chase Bank ✓</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title" style="margin-bottom:12px">Verification Checklist</div>
+          <div style="font-size:12.5px;line-height:2.2">
+            ✅ Email & phone verified<br>
+            ✅ 501(c)(3) determination letter<br>
+            ✅ State incorporation (Illinois)<br>
+            ✅ Admin passport KYC<br>
+            ✅ Bank account verified<br>
+            ✅ Compliance clear — no flags
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ PAGE: CREATOR LIST ═══════ -->
+  <div class="page" id="page-creator-list">
+    <div class="ph">
+      <div class="ph-left"><div class="ph-title">Creator Registry</div><div class="ph-sub">All influencers registered on the Socia platform</div></div>
+      <div class="flex ic gap10">
+        <select style="font-size:12px;padding:6px 12px;border:1px solid var(--border);border-radius:7px;background:var(--surface);color:var(--ink)">
+          <option>All Status</option><option>Active</option><option>KYC Pending</option><option>Suspended</option>
+        </select>
+        <button class="btn btn-teal btn-sm">⬇ Export</button>
+      </div>
+    </div>
+
+    <div class="g4" style="margin-bottom:20px">
+      <div class="kpi-card"><div class="kpi-icon" style="background:rgba(124,58,237,0.1)">🤳</div><div class="kpi-label">Total Creators</div><div class="kpi-value">312</div><div class="kpi-delta up">↑ 28 this month</div></div>
+      <div class="kpi-card"><div class="kpi-icon" style="background:rgba(15,155,142,0.1)">✅</div><div class="kpi-label">KYC Approved</div><div class="kpi-value">287</div><div class="kpi-delta up">92%</div></div>
+      <div class="kpi-card"><div class="kpi-icon" style="background:rgba(232,160,32,0.12)">📤</div><div class="kpi-label">Active on Campaigns</div><div class="kpi-value">148</div><div class="kpi-delta up">This month</div></div>
+      <div class="kpi-card"><div class="kpi-icon" style="background:rgba(14,165,233,0.1)">💵</div><div class="kpi-label">Stipends Paid Out</div><div class="kpi-value">$84K</div><div class="kpi-delta up">↑ 38% YoY</div></div>
+    </div>
+
+    <div class="card">
+      <div class="tab-bar" style="margin-bottom:16px">
+        <button class="tab-btn active">All (312)</button>
+        <button class="tab-btn">Active (148)</button>
+        <button class="tab-btn">KYC Pending (18)</button>
+        <button class="tab-btn">Top Earners</button>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr><th>Creator</th><th>Handle(s)</th><th>Followers</th><th>ER%</th><th>Active Projects</th><th>Total Earned</th><th>KYC</th><th>Action</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><div class="flex ic gap10"><div class="av" style="background:linear-gradient(135deg,#0F9B8E,#0EA5E9)">JR</div><div><div style="font-weight:600">Jamie Rivera</div><div style="font-size:11px;color:var(--muted)">jamie@example.com</div></div></div></td>
+              <td class="td-mono">@jamie.forchange, @jamie_advocacy</td>
+              <td style="font-weight:600">217K</td>
+              <td><span style="color:var(--teal);font-weight:700">5.2%</span></td>
+              <td style="font-weight:700">2</td>
+              <td style="font-weight:700;color:var(--teal)">$4,820</td>
+              <td><span class="badge b-teal">✓</span></td>
+              <td><button class="btn btn-outline btn-xs" onclick="showPage('creator-detail')">View →</button></td>
+            </tr>
+            <tr>
+              <td><div class="flex ic gap10"><div class="av" style="background:linear-gradient(135deg,#7C3AED,#4F46E5)">SC</div><div><div style="font-weight:600">Sofia Chen</div><div style="font-size:11px;color:var(--muted)">sofia@example.com</div></div></div></td>
+              <td class="td-mono">@sofia.creates</td>
+              <td style="font-weight:600">182K</td>
+              <td><span style="color:var(--teal);font-weight:700">6.1%</span></td>
+              <td style="font-weight:700">3</td>
+              <td style="font-weight:700;color:var(--teal)">$6,200</td>
+              <td><span class="badge b-teal">✓</span></td>
+              <td><button class="btn btn-outline btn-xs" onclick="showPage('creator-detail')">View →</button></td>
+            </tr>
+            <tr>
+              <td><div class="flex ic gap10"><div class="av" style="background:linear-gradient(135deg,#E8A020,#D97706)">NI</div><div><div style="font-weight:600">Noah Impact</div><div style="font-size:11px;color:var(--muted)">noah@example.com</div></div></div></td>
+              <td class="td-mono">@noah.impact</td>
+              <td style="font-weight:600">94K</td>
+              <td><span style="font-weight:700">4.8%</span></td>
+              <td style="font-weight:700">1</td>
+              <td style="font-weight:700;color:var(--teal)">$2,100</td>
+              <td><span class="badge b-teal">✓</span></td>
+              <td><button class="btn btn-outline btn-xs" onclick="showPage('creator-detail')">View →</button></td>
+            </tr>
+            <tr>
+              <td><div class="flex ic gap10"><div class="av" style="background:linear-gradient(135deg,#E8365D,#BE123C)">AL</div><div><div style="font-weight:600">Aisha Lennox</div><div style="font-size:11px;color:var(--muted)">aisha@example.com</div></div></div></td>
+              <td class="td-mono">@aisha.lens, @aisha_global</td>
+              <td style="font-weight:600">340K</td>
+              <td><span style="color:var(--teal);font-weight:700">7.3%</span></td>
+              <td style="font-weight:700">4</td>
+              <td style="font-weight:700;color:var(--teal)">$9,400</td>
+              <td><span class="badge b-teal">✓</span></td>
+              <td><button class="btn btn-outline btn-xs" onclick="showPage('creator-detail')">View →</button></td>
+            </tr>
+            <tr>
+              <td><div class="flex ic gap10"><div class="av" style="background:linear-gradient(135deg,#64748B,#475569)">MK</div><div><div style="font-weight:600">Marcus Kimani</div><div style="font-size:11px;color:var(--muted)">marcus@example.com</div></div></div></td>
+              <td class="td-mono">@marcus.cause</td>
+              <td style="font-weight:600">58K</td>
+              <td style="color:var(--muted)">3.2%</td>
+              <td style="font-weight:700">0</td>
+              <td style="color:var(--muted)">$0</td>
+              <td><span class="badge b-amber">⏳ Pending</span></td>
+              <td><button class="btn btn-outline btn-xs" onclick="showPage('creator-detail')">View →</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ PAGE: CREATOR DETAIL ═══════ -->
+  <div class="page" id="page-creator-detail">
+    <div class="ph">
+      <div class="ph-left">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:4px">
+          <span style="cursor:pointer;color:var(--teal)" onclick="showPage('creator-list')">Creator Registry</span>
+          <span class="sep">/</span> <b>Jamie Rivera</b>
+        </div>
+        <div class="ph-title">Jamie Rivera</div>
+        <div class="ph-sub">@jamie.forchange · Social-impact creator · Joined Jan 2026</div>
+      </div>
+      <div class="flex ic gap10">
+        <button class="btn btn-outline btn-sm">✉️ Message Creator</button>
+        <button class="btn btn-rose btn-sm">⏸ Suspend</button>
+      </div>
+    </div>
+
+    <div class="g-12">
+      <!-- Left: profile card -->
+      <div>
+        <div class="card" style="margin-bottom:14px">
+          <div style="background:linear-gradient(135deg,var(--ink),var(--ink-mid));border-radius:9px;padding:18px;margin-bottom:14px;text-align:center">
+            <div class="av" style="background:linear-gradient(135deg,var(--teal),var(--sky));width:52px;height:52px;font-size:20px;margin:0 auto 10px;">JR</div>
+            <div style="font-family:'Sora',sans-serif;font-weight:700;font-size:16px;color:#fff">Jamie Rivera</div>
+            <div style="font-size:11.5px;color:rgba(255,255,255,0.5);margin-top:2px">@jamie.forchange · @jamie_advocacy</div>
+            <div style="margin-top:10px;display:flex;gap:6px;justify-content:center">
+              <span class="badge b-teal">KYC ✓</span>
+              <span class="badge b-teal">Bank ✓</span>
+            </div>
+          </div>
+          <div style="font-size:12.5px;display:flex;flex-direction:column;gap:8px">
+            <div class="flex jb"><span style="color:var(--muted)">Email</span><span style="font-weight:600">jamie@example.com</span></div>
+            <div class="flex jb"><span style="color:var(--muted)">Phone</span><span style="font-weight:600">+1 415 555 0182</span></div>
+            <div class="flex jb"><span style="color:var(--muted)">Country</span><span style="font-weight:600">United States</span></div>
+            <div class="flex jb"><span style="color:var(--muted)">Bank</span><span style="font-weight:600">Chase Bank ✓</span></div>
+            <div class="flex jb"><span style="color:var(--muted)">Total Earned</span><span style="font-weight:800;color:var(--teal)">$4,820</span></div>
+          </div>
+        </div>
+
+        <!-- Audience stats -->
+        <div class="card">
+          <div class="card-title" style="margin-bottom:12px">Linked Accounts</div>
+          <div style="font-size:12.5px">
+            <div class="flex jb ic" style="padding:8px 0;border-bottom:1px solid var(--border)"><span>📸 @jamie.forchange</span><span style="font-weight:700">98K · 5.8%</span></div>
+            <div class="flex jb ic" style="padding:8px 0;border-bottom:1px solid var(--border)"><span>📸 @jamie_advocacy</span><span style="font-weight:700">24K · 6.1%</span></div>
+            <div class="flex jb ic" style="padding:8px 0;border-bottom:1px solid var(--border)"><span>▶️ Jamie for Change</span><span style="font-weight:700">61K · 4.4%</span></div>
+            <div class="flex jb ic" style="padding:8px 0"><span>𝕏 @jamie_change</span><span style="font-weight:700">34K · 3.9%</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: projects + submissions -->
+      <div>
+        <div class="g3" style="margin-bottom:14px">
+          <div class="stat-mini"><div><div class="sm-val">2</div><div class="sm-lbl">Active projects</div></div></div>
+          <div class="stat-mini"><div><div class="sm-val">6</div><div class="sm-lbl">Total completed</div></div></div>
+          <div class="stat-mini"><div><div class="sm-val" style="color:var(--teal)">$4,820</div><div class="sm-lbl">Total earned</div></div></div>
+        </div>
+
+        <div class="card" style="margin-bottom:14px">
+          <div class="card-title" style="margin-bottom:12px">Projects — Jamie Rivera</div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Campaign</th><th>NPO</th><th>Platform</th><th>Stipend</th><th>Deliverables</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td style="font-weight:600">🍽️ Daily Meals for Homeless Families</td>
+                  <td>HopeForward</td>
+                  <td><span class="badge b-amber">GoFundMe</span></td>
+                  <td style="font-weight:700;color:var(--teal)">$500</td>
+                  <td>2/3 approved</td>
+                  <td><span class="badge b-amber">In Progress</span></td>
+                </tr>
+                <tr>
+                  <td style="font-weight:600">🏫 Build a School – Ghana</td>
+                  <td>HopeForward</td>
+                  <td><span class="badge b-sky">Kickstarter</span></td>
+                  <td style="font-weight:700;color:var(--teal)">$350</td>
+                  <td>0/3 submitted</td>
+                  <td><span class="badge b-violet">Not started</span></td>
+                </tr>
+                <tr>
+                  <td style="font-weight:600">🌊 Clean Water Wells – Bangladesh</td>
+                  <td>charity: water</td>
+                  <td><span class="badge b-sky">Kickstarter</span></td>
+                  <td style="font-weight:700;color:var(--teal)">$380</td>
+                  <td>3/3 approved</td>
+                  <td><span class="badge b-teal">Complete</span></td>
+                </tr>
+                <tr>
+                  <td style="font-weight:600">🤝 Refugee Welcome Fund</td>
+                  <td>IRC</td>
+                  <td><span class="badge b-sky">Kickstarter</span></td>
+                  <td style="font-weight:700;color:var(--teal)">$600</td>
+                  <td>4/4 approved</td>
+                  <td><span class="badge b-teal">Complete</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="margin-bottom:12px">Submission History</div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Campaign</th><th>Deliverable</th><th>Submitted</th><th>Platform</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td>Feed the Future</td><td>Instagram Reel</td><td class="td-mono">Apr 15</td><td>📸 Instagram</td><td><span class="badge b-teal">Approved</span></td></tr>
+                <tr><td>Feed the Future</td><td>YouTube Documentary</td><td class="td-mono">Apr 15</td><td>▶️ YouTube</td><td><span class="badge b-teal">Approved</span></td></tr>
+                <tr><td>Feed the Future</td><td>Instagram Story Set</td><td class="td-mono">Apr 16</td><td>📸 Instagram</td><td><span class="badge b-rose">Revision</span></td></tr>
+                <tr><td>Refugee Welcome Fund</td><td>Blog Post</td><td class="td-mono">Mar 28</td><td>🌐 Blog</td><td><span class="badge b-teal">Approved</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ PAGE: PROJECT SUBMISSION REVIEW ═══════ -->
+  <div class="page" id="page-proj-review">
+    <div class="ph">
+      <div class="ph-left"><div class="ph-title">Project Submission Review</div><div class="ph-sub">Projects submitted by NPOs — review, approve or reject before they go live to creators</div></div>
+      <div class="flex ic gap10">
+        <span class="badge b-rose" style="font-size:12px;padding:5px 12px">8 Pending</span>
+      </div>
+    </div>
+
+    <div class="tab-bar">
+      <button class="tab-btn active">Pending Review (8)</button>
+      <button class="tab-btn">Approved (34)</button>
+      <button class="tab-btn">Rejected (5)</button>
+      <button class="tab-btn">All Submissions</button>
+    </div>
+
+    <!-- Review card 1 — priority -->
+    <div class="review-card pending">
+      <div class="flex jb ic wrap gap10" style="margin-bottom:14px">
+        <div class="flex ic gap12">
+          <div style="width:46px;height:46px;border-radius:11px;background:linear-gradient(135deg,#004D40,#26A69A);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">💧</div>
+          <div>
+            <div style="font-weight:800;font-size:15px;color:var(--ink)">Clean Water Wells in Rural Bangladesh</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:2px">charity: water · Kickstarter · Environment — Submitted Apr 22, 2026 · <span style="color:var(--rose);font-weight:600">3 days ago</span></div>
+          </div>
+        </div>
+        <div class="flex ic gap8">
+          <span class="badge b-amber">⏳ Pending</span>
+          <span class="badge b-rose" style="font-size:10px">Priority — oldest</span>
+        </div>
+      </div>
+
+      <div class="g3" style="margin-bottom:14px;gap:12px">
+        <div style="background:var(--surface-2);border-radius:9px;padding:12px">
+          <div style="font-size:10.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Campaign Goal</div>
+          <div style="font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--teal)">$60,000</div>
+          <div style="font-size:11px;color:var(--muted)">Kickstarter · 90 days</div>
+        </div>
+        <div style="background:var(--surface-2);border-radius:9px;padding:12px">
+          <div style="font-size:10.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Creator Stipend</div>
+          <div style="font-family:'Sora',sans-serif;font-size:18px;font-weight:800">$400</div>
+          <div style="font-size:11px;color:var(--muted)">per creator · 20 creators</div>
+        </div>
+        <div style="background:var(--surface-2);border-radius:9px;padding:12px">
+          <div style="font-size:10.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Platform Fee</div>
+          <div style="font-family:'Sora',sans-serif;font-size:18px;font-weight:800">$2,100</div>
+          <div style="font-size:11px;color:var(--muted)">3.5% of $60K goal</div>
+        </div>
+      </div>
+
+      <div style="background:var(--surface-2);border-radius:9px;padding:14px;margin-bottom:14px">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Project Description</div>
+        <div style="font-size:13px;line-height:1.7;color:var(--ink)">
+          Over 40 million people in Bangladesh lack safe drinking water. This campaign funds 50 clean water wells across rural Sylhet and Chittagong, benefiting ~25,000 families. Each well costs $1,200 and is maintained by a trained local volunteer.
+        </div>
+      </div>
+
+      <!-- Checklist -->
+      <div style="background:var(--surface-2);border-radius:9px;padding:14px;margin-bottom:14px">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Review Checklist</div>
+        <div class="g2" style="gap:8px">
+          <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;cursor:pointer"><input type="checkbox" checked /> NPO is verified &amp; in good standing</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;cursor:pointer"><input type="checkbox" checked /> Project description meets content policy</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;cursor:pointer"><input type="checkbox" checked /> Goal amount is reasonable &amp; documented</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;cursor:pointer"><input type="checkbox" checked /> Field photos uploaded and authentic</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;cursor:pointer"><input type="checkbox" /> Charity registration document verified</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;cursor:pointer"><input type="checkbox" checked /> Impact metrics are specific &amp; measurable</label>
+        </div>
+      </div>
+
+      <div style="margin-bottom:10px">
+        <label style="font-size:12px;font-weight:700;color:var(--muted);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px">Admin Notes (optional)</label>
+        <textarea style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;font-family:'Inter',sans-serif;resize:vertical;outline:none;color:var(--ink)" rows="2" placeholder="Add internal notes before approving or rejecting…"></textarea>
+      </div>
+
+      <div class="flex ic gap10">
+        <button class="btn btn-teal" onclick="this.closest('.review-card').classList.replace('pending','approved');this.closest('.review-card').querySelector('.badge').textContent='✅ Approved';this.closest('.review-card').style.borderLeftColor='var(--teal)'">✅ Approve — Publish to Creators</button>
+        <button class="btn btn-rose" onclick="this.closest('.review-card').classList.replace('pending','rejected')">✕ Reject</button>
+        <button class="btn btn-outline">✉️ Request More Info</button>
+      </div>
+    </div>
+
+    <!-- Review card 2 -->
+    <div class="review-card pending">
+      <div class="flex jb ic wrap gap10" style="margin-bottom:14px">
+        <div class="flex ic gap12">
+          <div style="width:46px;height:46px;border-radius:11px;background:linear-gradient(135deg,#E8365D,#7C3AED);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">💉</div>
+          <div>
+            <div style="font-weight:800;font-size:15px;color:var(--ink)">Vaccination Drive – West Africa</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:2px">UNICEF · Indiegogo · Healthcare — Submitted Apr 21, 2026</div>
+          </div>
+        </div>
+        <span class="badge b-amber">⏳ Pending</span>
+      </div>
+      <div class="g3" style="margin-bottom:14px;gap:12px">
+        <div style="background:var(--surface-2);border-radius:9px;padding:12px"><div style="font-size:10.5px;color:var(--muted);font-weight:700;margin-bottom:6px">GOAL</div><div style="font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--teal)">$90,000</div></div>
+        <div style="background:var(--surface-2);border-radius:9px;padding:12px"><div style="font-size:10.5px;color:var(--muted);font-weight:700;margin-bottom:6px">STIPEND</div><div style="font-family:'Sora',sans-serif;font-size:18px;font-weight:800">$450</div></div>
+        <div style="background:var(--surface-2);border-radius:9px;padding:12px"><div style="font-size:10.5px;color:var(--muted);font-weight:700;margin-bottom:6px">CATEGORY</div><div style="font-size:14px;font-weight:700">🏥 Healthcare</div></div>
+      </div>
+      <div style="background:var(--surface-2);border-radius:9px;padding:14px;margin-bottom:14px;font-size:13px;line-height:1.7">
+        UNICEF's campaign funds 150,000 childhood vaccination doses across 5 rural districts in Ghana, Côte d'Ivoire, and Senegal. Each $6 donated covers one full vaccination course for a child under 5.
+      </div>
+      <div class="flex ic gap10">
+        <button class="btn btn-teal" onclick="this.closest('.review-card').classList.replace('pending','approved')">✅ Approve — Publish to Creators</button>
+        <button class="btn btn-rose" onclick="this.closest('.review-card').classList.replace('pending','rejected')">✕ Reject</button>
+        <button class="btn btn-outline">✉️ Request More Info</button>
+      </div>
+    </div>
+
+    <!-- Review card 3 -->
+    <div class="review-card pending">
+      <div class="flex jb ic wrap gap10" style="margin-bottom:14px">
+        <div class="flex ic gap12">
+          <div style="width:46px;height:46px;border-radius:11px;background:linear-gradient(135deg,#0EA5E9,#7C3AED);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">📚</div>
+          <div>
+            <div style="font-weight:800;font-size:15px;color:var(--ink)">Girls' Education Fund – Nepal</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:2px">Room to Read · Kickstarter · Education — Submitted Apr 20, 2026</div>
+          </div>
+        </div>
+        <span class="badge b-amber">⏳ Pending</span>
+      </div>
+      <div class="g3" style="margin-bottom:14px;gap:12px">
+        <div style="background:var(--surface-2);border-radius:9px;padding:12px"><div style="font-size:10.5px;color:var(--muted);font-weight:700;margin-bottom:6px">GOAL</div><div style="font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--teal)">$45,000</div></div>
+        <div style="background:var(--surface-2);border-radius:9px;padding:12px"><div style="font-size:10.5px;color:var(--muted);font-weight:700;margin-bottom:6px">STIPEND</div><div style="font-family:'Sora',sans-serif;font-size:18px;font-weight:800">$380</div></div>
+        <div style="background:var(--surface-2);border-radius:9px;padding:12px"><div style="font-size:10.5px;color:var(--muted);font-weight:700;margin-bottom:6px">CATEGORY</div><div style="font-size:14px;font-weight:700">🏫 Education</div></div>
+      </div>
+      <div style="background:var(--surface-2);border-radius:9px;padding:14px;margin-bottom:14px;font-size:13px;line-height:1.7">
+        This campaign funds school fees, books, and uniforms for 1,800 girls at risk of dropping out of secondary school in the Terai region of Nepal due to economic pressures.
+      </div>
+      <div class="flex ic gap10">
+        <button class="btn btn-teal" onclick="this.closest('.review-card').classList.replace('pending','approved')">✅ Approve — Publish to Creators</button>
+        <button class="btn btn-rose" onclick="this.closest('.review-card').classList.replace('pending','rejected')">✕ Reject</button>
+        <button class="btn btn-outline">✉️ Request More Info</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ PAGE: LIVE PROJECTS ═══════ -->
+  <div class="page" id="page-proj-live">
+    <div class="ph">
+      <div class="ph-left"><div class="ph-title">Live Projects</div><div class="ph-sub">All approved campaigns currently available to creators on Socia</div></div>
+      <div class="flex ic gap10">
+        <select style="font-size:12px;padding:6px 12px;border:1px solid var(--border);border-radius:7px;background:var(--surface);color:var(--ink)">
+          <option>All Categories</option><option>Education</option><option>Food Relief</option><option>Healthcare</option><option>Refugees</option>
+        </select>
+        <button class="btn btn-teal btn-sm">⬇ Export</button>
+      </div>
+    </div>
+
+    <div class="g4" style="margin-bottom:20px">
+      <div class="kpi-card"><div class="kpi-icon" style="background:rgba(15,155,142,0.1)">✅</div><div class="kpi-label">Live Projects</div><div class="kpi-value">34</div><div class="kpi-delta up">↑ 4 this week</div></div>
+      <div class="kpi-card"><div class="kpi-icon" style="background:rgba(14,165,233,0.1)">💵</div><div class="kpi-label">Total Raised</div><div class="kpi-value">$2.84M</div><div class="kpi-delta up">Across all live</div></div>
+      <div class="kpi-card"><div class="kpi-icon" style="background:rgba(124,58,237,0.1)">🤳</div><div class="kpi-label">Creators Engaged</div><div class="kpi-value">148</div><div class="kpi-delta up">Active this month</div></div>
+      <div class="kpi-card"><div class="kpi-icon" style="background:rgba(232,160,32,0.12)">⏰</div><div class="kpi-label">Closing This Week</div><div class="kpi-value">3</div><div class="kpi-delta dn">Need attention</div></div>
+    </div>
+
+    <div class="card">
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr><th>Project</th><th>NPO</th><th>Platform</th><th>Category</th><th>Goal</th><th>Raised</th><th>Progress</th><th>Creators</th><th>Deadline</th><th>Action</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="font-weight:600">🏫 Build a School in Rural Ghana</td>
+              <td>Pencils of Promise</td>
+              <td><span class="badge b-sky">Kickstarter</span></td>
+              <td><span class="tag">Education</span></td>
+              <td>$75K</td>
+              <td style="font-weight:700;color:var(--teal)">$54.2K</td>
+              <td><div class="prog-wrap" style="width:80px"><div class="prog-bar" style="width:72%;background:var(--teal)"></div></div></td>
+              <td style="font-weight:700">8</td>
+              <td class="td-mono">May 10</td>
+              <td><button class="btn btn-outline btn-xs" onclick="showPage('npo-detail')">Details</button></td>
+            </tr>
+            <tr>
+              <td style="font-weight:600">🍽️ Daily Meals for Homeless Families</td>
+              <td>HopeForward Foundation</td>
+              <td><span class="badge b-amber">GoFundMe</span></td>
+              <td><span class="tag">Food Relief</span></td>
+              <td>$100K</td>
+              <td style="font-weight:700;color:var(--amber)">$88K</td>
+              <td><div class="prog-wrap" style="width:80px"><div class="prog-bar" style="width:88%;background:var(--amber)"></div></div></td>
+              <td style="font-weight:700">11</td>
+              <td class="td-mono" style="color:var(--rose)">Apr 25 ⚠</td>
+              <td><button class="btn btn-outline btn-xs">Details</button></td>
+            </tr>
+            <tr>
+              <td style="font-weight:600">💉 Mobile Clinics for Rural Kenya</td>
+              <td>Doctors Without Borders</td>
+              <td><span class="badge b-violet">Indiegogo</span></td>
+              <td><span class="tag">Healthcare</span></td>
+              <td>$150K</td>
+              <td style="font-weight:700;color:var(--teal)">$79.5K</td>
+              <td><div class="prog-wrap" style="width:80px"><div class="prog-bar" style="width:53%;background:var(--teal)"></div></div></td>
+              <td style="font-weight:700">7</td>
+              <td class="td-mono">Jun 1</td>
+              <td><button class="btn btn-outline btn-xs">Details</button></td>
+            </tr>
+            <tr>
+              <td style="font-weight:600">🤝 Legal Aid for Syrian Refugees</td>
+              <td>IRC</td>
+              <td><span class="badge b-sky">Kickstarter</span></td>
+              <td><span class="tag">Refugees</span></td>
+              <td>$50K</td>
+              <td style="font-weight:700;color:var(--teal)">$21K</td>
+              <td><div class="prog-wrap" style="width:80px"><div class="prog-bar" style="width:42%;background:var(--violet)"></div></div></td>
+              <td style="font-weight:700">6</td>
+              <td class="td-mono">May 20</td>
+              <td><button class="btn btn-outline btn-xs">Details</button></td>
+            </tr>
+            <tr>
+              <td style="font-weight:600">🌊 Clean Water Wells – Bangladesh</td>
+              <td>charity: water</td>
+              <td><span class="badge b-sky">Kickstarter</span></td>
+              <td><span class="tag">Environment</span></td>
+              <td>$60K</td>
+              <td style="font-weight:700;color:var(--teal)">$38K</td>
+              <td><div class="prog-wrap" style="width:80px"><div class="prog-bar" style="width:63%;background:var(--sky)"></div></div></td>
+              <td style="font-weight:700">9</td>
+              <td class="td-mono">Apr 30</td>
+              <td><button class="btn btn-outline btn-xs">Details</button></td>
+            </tr>
+            <tr>
+              <td style="font-weight:600">🏘️ Emergency Housing – Flood Survivors</td>
+              <td>Habitat for Humanity</td>
+              <td><span class="badge b-amber">GoFundMe</span></td>
+              <td><span class="tag">Housing</span></td>
+              <td>$50K</td>
+              <td style="font-weight:700;color:var(--teal)">$9.5K</td>
+              <td><div class="prog-wrap" style="width:80px"><div class="prog-bar" style="width:19%;background:var(--rose)"></div></div></td>
+              <td style="font-weight:700">3</td>
+              <td class="td-mono">May 30</td>
+              <td><button class="btn btn-outline btn-xs">Details</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ PAGE: PAYOUTS ═══════ -->
+  <div class="page" id="page-payouts">
+    <div class="ph"><div class="ph-left"><div class="ph-title">Payouts & Platform Fees</div><div class="ph-sub">Creator stipend disbursements and Socia fee tracking</div></div></div>
+    <div class="g4" style="margin-bottom:20px">
+      <div class="kpi-card"><div class="kpi-icon" style="background:rgba(15,155,142,0.1)">💵</div><div class="kpi-label">Total Paid Out</div><div class="kpi-value">$84K</div><div class="kpi-delta up">To creators</div></div>
+      <div class="kpi-card"><div class="kpi-icon" style="background:rgba(232,160,32,0.12)">⏳</div><div class="kpi-label">Pending Payouts</div><div class="kpi-value">$12.4K</div><div class="kpi-delta dn">Awaiting approval</div></div>
+      <div class="kpi-card"><div class="kpi-icon" style="background:rgba(14,165,233,0.1)">📊</div><div class="kpi-label">Platform Fees Earned</div><div class="kpi-value">$99.4K</div><div class="kpi-delta up">3.5% of $2.84M</div></div>
+      <div class="kpi-card"><div class="kpi-icon" style="background:rgba(124,58,237,0.1)">🤳</div><div class="kpi-label">Creators Paid</div><div class="kpi-value">148</div><div class="kpi-delta up">This year</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="margin-bottom:14px">Recent Transactions</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Creator</th><th>Campaign</th><th>NPO</th><th>Amount</th><th>Fee Deducted</th><th>Net</th><th>Date</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Aisha Lennox</td><td>Schools for All</td><td>Pencils of Promise</td><td>$450</td><td style="color:var(--rose)">–$15.75</td><td style="font-weight:700;color:var(--teal)">$434.25</td><td class="td-mono">Apr 19</td><td><span class="badge b-teal">Paid</span></td></tr>
+            <tr><td>Jamie Rivera</td><td>Refugee Welcome Fund</td><td>IRC</td><td>$600</td><td style="color:var(--rose)">–$21.00</td><td style="font-weight:700;color:var(--teal)">$579.00</td><td class="td-mono">Apr 12</td><td><span class="badge b-teal">Paid</span></td></tr>
+            <tr><td>Sofia Chen</td><td>Mobile Clinics Kenya</td><td>MSF</td><td>$450</td><td style="color:var(--rose)">–$15.75</td><td style="font-weight:700;color:var(--teal)">$434.25</td><td class="td-mono">Mar 28</td><td><span class="badge b-teal">Paid</span></td></tr>
+            <tr><td>Jamie Rivera</td><td>Feed the Future</td><td>HopeForward</td><td>$500</td><td style="color:var(--rose)">–$17.50</td><td style="font-weight:700;color:var(--amber)">$482.50</td><td class="td-mono">Pending</td><td><span class="badge b-amber">Pending</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ PAGE: COMPLIANCE ═══════ -->
+  <div class="page" id="page-compliance">
+    <div class="ph"><div class="ph-left"><div class="ph-title">Compliance & Flags</div><div class="ph-sub">Active flags, policy violations, and review queue</div></div></div>
+    <div class="g4" style="margin-bottom:20px">
+      <div class="kpi-card"><div class="kpi-icon" style="background:rgba(232,54,93,0.1)">🚩</div><div class="kpi-label">Open Flags</div><div class="kpi-value">3</div><div class="kpi-delta dn">Action needed</div></div>
+      <div class="kpi-card"><div class="kpi-icon" style="background:rgba(15,155,142,0.1)">✅</div><div class="kpi-label">Resolved (30d)</div><div class="kpi-value">11</div><div class="kpi-delta up">All cleared</div></div>
+      <div class="kpi-card"><div class="kpi-icon" style="background:rgba(232,160,32,0.12)">⚠️</div><div class="kpi-label">Content Revisions</div><div class="kpi-value">6</div><div class="kpi-delta dn">Requested</div></div>
+      <div class="kpi-card"><div class="kpi-icon" style="background:rgba(124,58,237,0.1)">🛡️</div><div class="kpi-label">Policy Violations</div><div class="kpi-value">0</div><div class="kpi-delta up">Clean</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="margin-bottom:14px">Active Flags</div>
+      <div class="review-card pending" style="border-left-color:var(--rose)">
+        <div class="flex jb ic" style="margin-bottom:8px"><div style="font-weight:700">HopeForward Foundation — Bank Re-verification Required</div><span class="badge b-rose">NPO Flag</span></div>
+        <div style="font-size:12.5px;color:var(--muted);margin-bottom:12px">Bank account change requested without completing re-verification process. Disbursements paused until resolved.</div>
+        <div class="flex ic gap8"><button class="btn btn-outline btn-sm">View Details</button><button class="btn btn-teal btn-sm">Clear Flag</button></div>
+      </div>
+      <div class="review-card pending" style="border-left-color:var(--amber)">
+        <div class="flex jb ic" style="margin-bottom:8px"><div style="font-weight:700">@noah.impact — Missing GoFundMe link in Story submission</div><span class="badge b-amber">Content Flag</span></div>
+        <div style="font-size:12.5px;color:var(--muted);margin-bottom:12px">Submitted story set for "Feed the Future" is missing the required campaign link. Creator has been notified to resubmit.</div>
+        <div class="flex ic gap8"><button class="btn btn-outline btn-sm">View Submission</button><button class="btn btn-teal btn-sm">Mark Resolved</button></div>
+      </div>
+      <div class="review-card pending" style="border-left-color:var(--amber)">
+        <div class="flex jb ic" style="margin-bottom:8px"><div style="font-weight:700">Feed the Future — Unverified statistic in project description</div><span class="badge b-amber">Project Flag</span></span></div>
+        <div style="font-size:12.5px;color:var(--muted);margin-bottom:12px">Campaign description contained "80% malnutrition reduction" claim without citation. NPO has submitted corrected version — pending re-review.</div>
+        <div class="flex ic gap8"><button class="btn btn-amber btn-sm">Review Correction</button><button class="btn btn-teal btn-sm">Approve Update</button></div>
+      </div>
+    </div>
+  </div>
+
+  </div><!-- /scroll-area -->
+</div><!-- /main -->
+
+<script>
+const pageMap = {
+  'dashboard':      'Dashboard',
+  'activity':       'Live Activity',
+  'npo-list':       'Organizations / NPO Registry',
+  'npo-detail':     'Organizations / NPO Registry / HopeForward Foundation',
+  'creator-list':   'Creators / Creator Registry',
+  'creator-detail': 'Creators / Creator Registry / Jamie Rivera',
+  'proj-review':    'Projects / Submission Review',
+  'proj-live':      'Projects / Live Projects',
+  'payouts':        'Platform / Payouts & Fees',
+  'compliance':     'Platform / Compliance',
+};
+
+const navIdx = {
+  'dashboard':0,'activity':1,
+  'npo-list':2,'npo-detail':3,
+  'creator-list':4,'creator-detail':5,
+  'proj-review':6,'proj-live':7,
+  'payouts':8,'compliance':9,
+};
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const pg = document.getElementById('page-' + id);
+  if (pg) pg.classList.add('active');
+
+  const crumb = pageMap[id] || id;
+  const parts = crumb.split(' / ');
+  document.getElementById('breadcrumb').innerHTML =
+    parts.map((p,i) => i === parts.length-1 ? `<b>${p}</b>` : `<span style="color:var(--muted)">${p}</span>`).join('<span class="sep"> / </span>');
+
+  document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+  const navItems = document.querySelectorAll('.nav-link');
+  const idx = navIdx[id];
+  if (idx !== undefined && navItems[idx]) navItems[idx].classList.add('active');
+
+  window.scrollTo(0, 0);
+}
+
+// Tab buttons
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const bar = btn.closest('.tab-bar');
+    if (bar) { bar.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); }
+  });
+});
+
+// Scrollable area uses its own scroll
+document.querySelector('.scroll-area').addEventListener('scroll', ()=>{});
+</script>
+</body>
+</html>

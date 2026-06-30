@@ -1,0 +1,3129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Socia – Influencer Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --blue: #1565C0;
+  --blue-mid: #1E88E5;
+  --blue-light: #E3F2FD;
+  --green: #2E7D32;
+  --green-mid: #43A047;
+  --green-light: #E8F5E9;
+  --orange: #E65100;
+  --orange-mid: #FB8C00;
+  --orange-light: #FFF3E0;
+  --navy: #1A2B4A;
+  --navy-mid: #2C3E6B;
+  --slate: #64748B;
+  --slate-light: #94A3B8;
+  --bg: #F4F7FB;
+  --white: #FFFFFF;
+  --border: #E2E8F0;
+  --card: #FFFFFF;
+  --text: #1A2B4A;
+  --text-sm: #64748B;
+  --red: #C62828;
+  --red-light: #FFEBEE;
+  --sidebar-w: 240px;
+  --header-h: 64px;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── SIDEBAR ───────────────────────────────── */
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--navy);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 100;
+  overflow-y: auto;
+}
+
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.logo-icon {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, #1E88E5 0%, #43A047 50%, #FB8C00 100%);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.logo-icon svg { width:24px; height:24px; }
+
+.logo-text {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 800;
+  font-size: 20px;
+  color: #fff;
+  letter-spacing: 0.5px;
+}
+
+.sidebar-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.user-avatar {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--blue-mid), var(--green-mid));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 700; color: #fff;
+}
+
+.user-info { flex:1; }
+.user-name { font-size: 13px; font-weight: 600; color: #fff; }
+.user-handle { font-size: 11px; color: rgba(255,255,255,0.5); }
+
+.sidebar-section {
+  padding: 16px 12px 8px;
+}
+
+.sidebar-section-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: rgba(255,255,255,0.35);
+  text-transform: uppercase;
+  padding: 0 8px 8px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+  color: rgba(255,255,255,0.6);
+  font-size: 13.5px;
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+.nav-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.nav-item.active { background: rgba(30,136,229,0.25); color: #fff; }
+.nav-item.active .nav-icon { color: var(--blue-mid); }
+.nav-icon { font-size: 16px; width:18px; text-align:center; }
+
+.nav-badge {
+  margin-left: auto;
+  background: var(--orange-mid);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 20px;
+}
+
+.sidebar-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+  color: rgba(255,255,255,0.5);
+  font-size: 12.5px;
+  margin-bottom: 2px;
+}
+.sidebar-step:hover { color: rgba(255,255,255,0.85); }
+.sidebar-step.active { color: #fff; }
+.sidebar-step.done .step-dot { background: var(--green-mid); }
+.step-dot {
+  width:8px; height:8px; border-radius:50%;
+  background: rgba(255,255,255,0.2);
+  flex-shrink:0;
+}
+
+/* ── MAIN ───────────────────────────────────── */
+.main {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.topbar {
+  height: var(--header-h);
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 28px;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.topbar-breadcrumb {
+  flex: 1;
+  font-size: 13px;
+  color: var(--slate);
+}
+.topbar-breadcrumb span { color: var(--text); font-weight: 600; }
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.icon-btn {
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.15s;
+  position: relative;
+}
+.icon-btn:hover { background: var(--border); }
+
+.notif-dot {
+  position: absolute;
+  top: 6px; right: 6px;
+  width: 8px; height: 8px;
+  background: var(--orange-mid);
+  border-radius: 50%;
+  border: 2px solid #fff;
+}
+
+.page-content {
+  padding: 28px;
+  flex: 1;
+}
+
+/* ── PAGE HEADER ────────────────────────────── */
+.page-header { margin-bottom: 24px; }
+.page-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 22px; font-weight: 800;
+  color: var(--navy);
+}
+.page-subtitle { font-size: 13.5px; color: var(--slate); margin-top: 3px; }
+
+/* ── CARDS ──────────────────────────────────── */
+.card {
+  background: var(--white);
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  padding: 22px;
+}
+
+.card-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--navy);
+  margin-bottom: 4px;
+}
+.card-sub { font-size: 12px; color: var(--slate); margin-bottom: 16px; }
+
+.stat-card {
+  background: var(--white);
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  padding: 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+.stat-icon {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink:0;
+}
+.stat-value {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 22px; font-weight: 800;
+  color: var(--navy);
+}
+.stat-label { font-size: 12px; color: var(--slate); margin-top: 2px; }
+.stat-delta { font-size: 12px; font-weight: 600; margin-top: 6px; }
+.stat-delta.up { color: var(--green-mid); }
+.stat-delta.down { color: var(--red); }
+
+/* ── GRID ───────────────────────────────────── */
+.grid-4 { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+.grid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+.grid-2 { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; }
+.grid-12 { display:grid; grid-template-columns:1fr 2fr; gap:20px; }
+.grid-21 { display:grid; grid-template-columns:2fr 1fr; gap:20px; }
+
+/* ── BUTTONS ────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 10px 20px;
+  border-radius: 9px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s;
+  font-family: 'DM Sans', sans-serif;
+}
+.btn-primary { background: var(--blue); color: #fff; }
+.btn-primary:hover { background: var(--navy-mid); }
+.btn-green { background: var(--green-mid); color: #fff; }
+.btn-green:hover { background: var(--green); }
+.btn-outline {
+  background: transparent;
+  border: 1.5px solid var(--border);
+  color: var(--navy);
+}
+.btn-outline:hover { border-color: var(--blue-mid); color: var(--blue); }
+.btn-danger { background: var(--red-light); color: var(--red); }
+.btn-danger:hover { background: var(--red); color: #fff; }
+.btn-sm { padding: 6px 14px; font-size: 12.5px; border-radius: 7px; }
+
+/* ── FORM ───────────────────────────────────── */
+.form-group { margin-bottom: 18px; }
+.form-label {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--navy);
+  margin-bottom: 6px;
+}
+.form-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 9px;
+  font-size: 13.5px;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--navy);
+  background: var(--white);
+  transition: border 0.15s;
+  outline: none;
+}
+.form-input:focus { border-color: var(--blue-mid); }
+.form-select {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 9px;
+  font-size: 13.5px;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--navy);
+  background: var(--white);
+  outline: none;
+  cursor: pointer;
+}
+
+/* ── TAGS/BADGES ────────────────────────────── */
+.badge {
+  display: inline-flex; align-items: center;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+.badge-blue { background: var(--blue-light); color: var(--blue); }
+.badge-green { background: var(--green-light); color: var(--green); }
+.badge-orange { background: var(--orange-light); color: var(--orange); }
+.badge-red { background: var(--red-light); color: var(--red); }
+.badge-gray { background: #F1F5F9; color: var(--slate); }
+
+/* ── STEPPER ────────────────────────────────── */
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 32px;
+}
+.step-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  flex: 1;
+}
+.step-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 18px;
+  left: calc(50% + 18px);
+  right: calc(-50% + 18px);
+  height: 2px;
+  background: var(--border);
+}
+.step-item.done:not(:last-child)::after { background: var(--blue-mid); }
+
+.step-circle {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700;
+  color: var(--slate);
+  background: #fff;
+  transition: all 0.2s;
+  position: relative;
+  z-index: 1;
+}
+.step-item.done .step-circle { background: var(--blue-mid); border-color: var(--blue-mid); color: #fff; }
+.step-item.current .step-circle { border-color: var(--blue-mid); color: var(--blue-mid); background: var(--blue-light); }
+.step-label { font-size: 11.5px; font-weight: 600; color: var(--slate); margin-top: 6px; text-align:center; }
+.step-item.done .step-label, .step-item.current .step-label { color: var(--blue); }
+
+/* ── TABLE ──────────────────────────────────── */
+.table-wrap { overflow-x:auto; }
+table { width:100%; border-collapse:collapse; }
+thead th {
+  text-align: left;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--slate);
+  text-transform: uppercase;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+tbody td {
+  padding: 13px 16px;
+  font-size: 13.5px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+tbody tr:hover { background: #F8FAFC; }
+tbody tr:last-child td { border-bottom: none; }
+
+/* ── CHART BARS ──────────────────────────────── */
+.bar-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 120px;
+  padding: 8px 0;
+}
+.bar-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+}
+.bar {
+  width: 100%;
+  border-radius: 6px 6px 0 0;
+  min-height: 4px;
+  transition: opacity 0.2s;
+}
+.bar:hover { opacity: 0.8; }
+.bar-label { font-size: 10px; color: var(--slate); }
+
+/* ── LINE CHART ──────────────────────────────── */
+.sparkline { width:100%; height:60px; }
+
+/* ── PROGRESS ────────────────────────────────── */
+.progress-wrap { background: var(--bg); border-radius: 10px; height: 8px; overflow:hidden; }
+.progress-bar { height: 100%; border-radius: 10px; transition: width 0.5s; }
+
+/* ── UPLOAD BOX ──────────────────────────────── */
+.upload-box {
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  padding: 28px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.upload-box:hover { border-color: var(--blue-mid); background: var(--blue-light); }
+.upload-icon { font-size: 32px; margin-bottom: 8px; }
+.upload-text { font-size: 13px; color: var(--slate); }
+.upload-text strong { color: var(--blue); }
+
+/* ── TOGGLE ──────────────────────────────────── */
+.toggle-wrap { display:flex; align-items:center; gap:10px; }
+.toggle {
+  position:relative; width:44px; height:24px;
+  cursor:pointer;
+}
+.toggle input { opacity:0; width:0; height:0; }
+.toggle-track {
+  position:absolute; inset:0;
+  background: var(--border);
+  border-radius:12px;
+  transition:0.2s;
+}
+.toggle input:checked + .toggle-track { background: var(--blue-mid); }
+.toggle-thumb {
+  position:absolute;
+  top:3px; left:3px;
+  width:18px; height:18px;
+  background:#fff;
+  border-radius:50%;
+  transition:0.2s;
+  box-shadow:0 1px 3px rgba(0,0,0,0.2);
+}
+.toggle input:checked ~ .toggle-thumb { transform:translateX(20px); }
+
+/* ── PAGES ──────────────────────────────────── */
+.page { display:none; }
+.page.active { display:block; }
+
+/* ── TIMELINE ──────────────────────────────── */
+.timeline { position:relative; padding-left:28px; }
+.timeline::before {
+  content:'';
+  position:absolute;
+  left:10px; top:0; bottom:0;
+  width:2px;
+  background: var(--border);
+}
+.timeline-item {
+  position:relative;
+  margin-bottom:20px;
+}
+.timeline-dot {
+  position:absolute;
+  left:-23px; top:3px;
+  width:12px; height:12px;
+  border-radius:50%;
+  border:2px solid var(--blue-mid);
+  background:#fff;
+}
+.timeline-dot.done { background:var(--green-mid); border-color:var(--green-mid); }
+.timeline-title { font-weight:600; font-size:13.5px; color:var(--navy); }
+.timeline-meta { font-size:12px; color:var(--slate); margin-top:2px; }
+
+/* ── KPI ROW ─────────────────────────────────── */
+.kpi-mini {
+  text-align:center;
+  padding:16px;
+  border-radius:10px;
+  background: var(--bg);
+}
+.kpi-val { font-size:20px; font-weight:800; font-family:'Plus Jakarta Sans',sans-serif; }
+.kpi-lbl { font-size:11.5px; color:var(--slate); margin-top:3px; }
+
+/* ── PLATFORM PILLS ──────────────────────────── */
+.platform-list { display:flex; gap:8px; flex-wrap:wrap; }
+.platform-pill {
+  display:flex; align-items:center; gap:6px;
+  padding:6px 12px;
+  border-radius:20px;
+  border:1.5px solid var(--border);
+  font-size:12px;
+  font-weight:600;
+  cursor:pointer;
+  transition:all 0.15s;
+}
+.platform-pill.active { border-color: var(--blue-mid); background:var(--blue-light); color:var(--blue); }
+.platform-pill:hover { border-color:var(--blue-mid); }
+
+/* ── PROJECT CARD ──────────────────────────────── */
+.proj-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow:hidden;
+  transition: box-shadow 0.2s, transform 0.2s;
+  cursor: pointer;
+}
+.proj-card:hover { box-shadow:0 4px 20px rgba(0,0,0,0.08); transform:translateY(-2px); }
+.proj-card-img {
+  height: 100px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display:flex; align-items:center; justify-content:center;
+  font-size:32px;
+}
+.proj-card-body { padding:16px; }
+.proj-card-title { font-weight:700; font-size:14px; color:var(--navy); margin-bottom:4px; }
+.proj-card-brand { font-size:12px; color:var(--slate); margin-bottom:10px; }
+.proj-card-footer { display:flex; justify-content:space-between; align-items:center; margin-top:12px; }
+
+/* ── AVATAR GROUP ────────────────────────────── */
+.avatar-group { display:flex; }
+.avatar-sm {
+  width:26px;height:26px;border-radius:50%;
+  border:2px solid #fff;
+  background:var(--blue-light);
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:700;color:var(--blue);
+  margin-left:-8px;
+}
+.avatar-sm:first-child { margin-left:0; }
+
+/* ── NOTIFICATION ────────────────────────────── */
+.notif-item {
+  display:flex;gap:12px;align-items:flex-start;
+  padding:12px 0;
+  border-bottom:1px solid var(--border);
+}
+.notif-item:last-child{border-bottom:none;}
+.notif-icon {
+  width:34px;height:34px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;flex-shrink:0;
+}
+.notif-text{font-size:13px;line-height:1.4;}
+.notif-time{font-size:11px;color:var(--slate);margin-top:3px;}
+
+/* ── ANIMATIONS ────────────────────────────────── */
+@keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+.page.active { animation: fadeIn 0.25s ease-out; }
+
+/* ── SCROLLBAR ──────────────────────────────── */
+::-webkit-scrollbar { width:6px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:rgba(100,116,139,0.3); border-radius:3px; }
+
+/* ── RESPONSIVE ─────────────────────────────── */
+.gap-16 { gap:16px; }
+.mt-20 { margin-top:20px; }
+.mt-12 { margin-top:12px; }
+.flex { display:flex; }
+.items-center { align-items:center; }
+.justify-between { justify-content:space-between; }
+
+/* ── SVG LOGO INLINE ─────────────────────────── */
+.socia-logo-svg {
+  width:28px; height:28px;
+}
+
+/* ── DONUT ──────────────────────────────────── */
+.donut-wrap { position:relative; display:inline-flex; }
+.donut-center {
+  position:absolute;
+  inset:0;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+}
+
+/* category tabs */
+.tab-row {
+  display:flex; gap:4px;
+  background:var(--bg);
+  border-radius:10px;
+  padding:4px;
+  margin-bottom:20px;
+}
+.tab-btn {
+  flex:1;
+  padding:8px;
+  border-radius:7px;
+  border:none;
+  background:transparent;
+  font-size:12.5px;
+  font-weight:600;
+  color:var(--slate);
+  cursor:pointer;
+  transition:all 0.15s;
+  font-family:'DM Sans',sans-serif;
+}
+.tab-btn.active { background:#fff; color:var(--navy); box-shadow:0 1px 4px rgba(0,0,0,0.08); }
+
+/* verification steps */
+.verify-step {
+  display:flex;gap:14px;align-items:flex-start;
+  padding:16px;
+  border:1.5px solid var(--border);
+  border-radius:12px;
+  margin-bottom:12px;
+  transition:border-color 0.15s;
+}
+.verify-step.active { border-color:var(--blue-mid); background:var(--blue-light); }
+.verify-step.done { border-color:var(--green-mid); background:var(--green-light); }
+.vs-num {
+  width:28px;height:28px;border-radius:50%;
+  background:var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;color:var(--slate);
+  flex-shrink:0;
+}
+.verify-step.active .vs-num { background:var(--blue-mid);color:#fff; }
+.verify-step.done .vs-num { background:var(--green-mid);color:#fff; }
+
+/* social connect */
+.social-row {
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px;
+  border:1.5px solid var(--border);
+  border-radius:12px;
+  margin-bottom:10px;
+}
+.social-row.connected { border-color:var(--green-mid);background:var(--green-light); }
+.social-left{display:flex;gap:12px;align-items:center;}
+.social-icon{font-size:22px;}
+.social-name{font-weight:600;font-size:14px;}
+.social-handle{font-size:12px;color:var(--slate);}
+
+/* inline tag */
+.tag {
+  display:inline-block;padding:2px 8px;
+  border-radius:6px;background:var(--blue-light);
+  color:var(--blue);font-size:11.5px;font-weight:600;
+  margin:2px;
+}
+
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════ SIDEBAR ══════════════════════ -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <!-- Inline SVG logo approximating Socia brand -->
+    <svg class="socia-logo-svg" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="20" cy="20" r="20" fill="#1A2B4A"/>
+      <path d="M20 8 C20 8, 28 12, 32 20 C28 28, 20 32, 12 28 C8 24, 10 14, 20 8Z" fill="#1E88E5" opacity="0.8"/>
+      <path d="M20 8 C12 10, 8 18, 12 28 C14 28, 16 26, 18 22 C16 18, 16 14, 20 8Z" fill="#43A047" opacity="0.85"/>
+      <path d="M32 20 C30 26, 24 30, 18 32 C18 28, 20 24, 24 22 C28 20, 30 18, 32 20Z" fill="#FB8C00" opacity="0.9"/>
+      <circle cx="20" cy="16" r="4" fill="white" opacity="0.9"/>
+    </svg>
+    <span class="logo-text">SOCIA</span>
+  </div>
+
+  <div class="sidebar-user">
+    <div class="user-avatar" id="sidebar-avatar">JR</div>
+    <div class="user-info">
+      <div class="user-name" id="sidebar-name">Jamie Rivera</div>
+      <div class="user-handle" id="sidebar-handle">@jamie.forchange</div>
+    </div>
+    <span style="color:rgba(255,255,255,0.4);font-size:14px;cursor:pointer;">⚙</span>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Registration</div>
+    <div class="nav-item active" onclick="showPage('reg-overview')">
+      <span class="nav-icon">📋</span> Registration Overview
+    </div>
+    <div class="sidebar-step done" onclick="showPage('reg-profile')">
+      <div class="step-dot"></div> 1. New Registration
+    </div>
+    <div class="sidebar-step done" onclick="showPage('reg-sns')">
+      <div class="step-dot"></div> 2. Link SNS Accounts
+    </div>
+    <div class="sidebar-step done" onclick="showPage('reg-kyc')">
+      <div class="step-dot"></div> 3. Identity (KYC)
+    </div>
+    <div class="sidebar-step" onclick="showPage('reg-tax')">
+      <div class="step-dot"></div> 4. Tax & Payment
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Projects</div>
+    <div class="nav-item" onclick="showPage('proj-active')">
+      <span class="nav-icon">🗂️</span> My Active Projects
+      <span class="nav-badge">2</span>
+    </div>
+    <div class="nav-item" onclick="showPage('proj-search')">
+      <span class="nav-icon">🔍</span> Project Search
+      <span class="nav-badge">12</span>
+    </div>
+    <div class="nav-item" onclick="showPage('proj-apply')">
+      <span class="nav-icon">📤</span> Apply / Participate
+    </div>
+    <div class="nav-item" onclick="showPage('proj-accept')">
+      <span class="nav-icon">✅</span> Accept / Decline
+      <span class="nav-badge">3</span>
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Post & Creative</div>
+    <div class="nav-item" onclick="showPage('post-materials')">
+      <span class="nav-icon">📦</span> Materials &amp; Assets
+    </div>
+    <div class="nav-item" onclick="showPage('post-submit')">
+      <span class="nav-icon">🔗</span> Submit Post URL
+    </div>
+    <div class="nav-item" onclick="showPage('post-review')">
+      <span class="nav-icon">🔎</span> Submission Review
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Analytics</div>
+    <div class="nav-item" onclick="showPage('analytics')">
+      <span class="nav-icon">📊</span> Analytics
+    </div>
+    <div class="nav-item" onclick="showPage('earnings')">
+      <span class="nav-icon">💰</span> Earnings
+    </div>
+  </div>
+</aside>
+
+<!-- ══════════════════════ MAIN ══════════════════════ -->
+<div class="main">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-breadcrumb" id="breadcrumb">
+      Registration / <span>Overview</span>
+    </div>
+    <div class="topbar-actions">
+      <div class="icon-btn" onclick="showPage('proj-search')">🔍</div>
+      <div class="icon-btn" onclick="showPage('post-review')">
+        🔔
+        <span class="notif-dot"></span>
+      </div>
+      <div class="user-avatar" id="topbar-avatar" style="cursor:pointer;" onclick="showPage('reg-profile')">JR</div>
+    </div>
+  </header>
+
+  <!-- ════════════ PAGE: REG OVERVIEW ════════════ -->
+  <div class="page active" id="page-reg-overview">
+    <div class="page-content">
+      <div class="page-header">
+        <div class="page-title">Registration Overview</div>
+        <div class="page-subtitle">Complete all steps to start amplifying social causes and nonprofit campaigns.</div>
+      </div>
+
+      <!-- Stepper -->
+      <div class="stepper">
+        <div class="step-item done">
+          <div class="step-circle">✓</div>
+          <div class="step-label">Profile</div>
+        </div>
+        <div class="step-item done">
+          <div class="step-circle">✓</div>
+          <div class="step-label">Link SNS</div>
+        </div>
+        <div class="step-item done">
+          <div class="step-circle">✓</div>
+          <div class="step-label">KYC</div>
+        </div>
+        <div class="step-item current">
+          <div class="step-circle">4</div>
+          <div class="step-label">Tax &amp; Pay</div>
+        </div>
+      </div>
+
+      <div class="grid-4">
+        <div class="stat-card" onclick="showPage('reg-profile')" style="cursor:pointer">
+          <div class="stat-icon" style="background:var(--blue-light)">👤</div>
+          <div>
+            <div class="stat-value">✓</div>
+            <div class="stat-label">Profile Created</div>
+            <div class="stat-delta up">Verified</div>
+          </div>
+        </div>
+        <div class="stat-card" onclick="showPage('reg-sns')" style="cursor:pointer">
+          <div class="stat-icon" style="background:#F3E5F5">🔗</div>
+          <div>
+            <div class="stat-value">3/4</div>
+            <div class="stat-label">SNS Linked</div>
+            <div class="stat-delta up">IG · YT · X linked</div>
+          </div>
+        </div>
+        <div class="stat-card" onclick="showPage('reg-kyc')" style="cursor:pointer">
+          <div class="stat-icon" style="background:var(--green-light)">🪪</div>
+          <div>
+            <div class="stat-value">✓</div>
+            <div class="stat-label">KYC Done</div>
+            <div class="stat-delta up">Approved</div>
+          </div>
+        </div>
+        <div class="stat-card" onclick="showPage('reg-tax')" style="cursor:pointer">
+          <div class="stat-icon" style="background:var(--orange-light)">🏦</div>
+          <div>
+            <div class="stat-value">Pending</div>
+            <div class="stat-label">Tax &amp; Payment</div>
+            <div class="stat-delta down">Action needed</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-20">
+        <div class="card">
+          <div class="card-title">Next Step Required</div>
+          <div class="card-sub">Complete your Tax & Payment details so Socia can process your creator stipends and donation-match rewards.</div>
+          <div class="flex items-center gap-16" style="gap:12px">
+            <button class="btn btn-primary" onclick="showPage('reg-tax')">Complete Tax & Payment →</button>
+            <button class="btn btn-outline" onclick="showPage('proj-search')">Browse Causes</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notification summary -->
+      <div class="mt-20">
+        <div class="card">
+          <div class="card-title">Recent Activity</div>
+          <div class="card-sub" style="margin-bottom:0"></div>
+          <div class="notif-item">
+            <div class="notif-icon" style="background:var(--green-light)">✅</div>
+            <div><div class="notif-text">Your KYC documents were <strong>approved</strong> by Socia.</div><div class="notif-time">2 hours ago</div></div>
+          </div>
+          <div class="notif-item">
+            <div class="notif-icon" style="background:var(--blue-light)">📩</div>
+            <div><div class="notif-text">New campaign invite from <strong>Pencils of Promise</strong> — "Build a School in Ghana" is waiting for your response.</div><div class="notif-time">5 hours ago</div></div>
+          </div>
+          <div class="notif-item">
+            <div class="notif-icon" style="background:var(--orange-light)">⏰</div>
+            <div><div class="notif-text"><strong>Feed the Future</strong> project deadline in <strong>2 days</strong>. Submit your post URL!</div><div class="notif-time">Yesterday</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ PAGE: REG PROFILE ════════════ -->
+  <div class="page" id="page-reg-profile">
+    <div class="page-content">
+      <div class="page-header">
+        <div class="page-title">New Creator Registration</div>
+        <div class="page-subtitle">Create your Socia account. Fields marked * are required.</div>
+      </div>
+
+      <div class="stepper">
+        <div class="step-item current"><div class="step-circle">1</div><div class="step-label">Profile</div></div>
+        <div class="step-item"><div class="step-circle">2</div><div class="step-label">Link SNS</div></div>
+        <div class="step-item"><div class="step-circle">3</div><div class="step-label">KYC</div></div>
+        <div class="step-item"><div class="step-circle">4</div><div class="step-label">Tax &amp; Pay</div></div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Personal Information</div>
+          <div class="card-sub">Basic profile details</div>
+          <div class="form-group">
+            <label class="form-label">Full Name *</label>
+            <input class="form-input" value="Jamie Rivera" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email Address *</label>
+            <input class="form-input" value="jamie@example.com" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone Number *</label>
+            <input class="form-input" value="+1 415 555 0182" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Country</label>
+            <select class="form-select">
+              <option selected>United States</option>
+              <option>United Kingdom</option>
+              <option>Canada</option>
+              <option>India</option>
+              <option>Germany</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <div class="card" style="margin-bottom:16px">
+            <div class="card-title">Verification</div>
+            <div class="card-sub">Required for account security</div>
+            <div class="verify-step done">
+              <div class="vs-num">✓</div>
+              <div><div style="font-weight:600;font-size:13px">Email Verification</div><div style="font-size:12px;color:var(--slate)">jamie@example.com confirmed</div></div>
+            </div>
+            <div class="verify-step done">
+              <div class="vs-num">✓</div>
+              <div><div style="font-weight:600;font-size:13px">Phone Verification</div><div style="font-size:12px;color:var(--slate)">+1 415 555 0182 confirmed</div></div>
+            </div>
+            <div class="verify-step active">
+              <div class="vs-num">3</div>
+              <div><div style="font-weight:600;font-size:13px">Agreement Signed</div><div style="font-size:12px;color:var(--blue)">Please review and sign the creator agreement below</div></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Cause Categories</div>
+            <div class="card-sub">Select the causes you're passionate about</div>
+            <div class="platform-list" style="margin-bottom:12px">
+              <div class="platform-pill active">🏫 Education</div>
+              <div class="platform-pill active">🍽️ Food Relief</div>
+              <div class="platform-pill active">🌍 Global Aid</div>
+              <div class="platform-pill">🏥 Healthcare</div>
+              <div class="platform-pill">♻️ Environment</div>
+              <div class="platform-pill">🏘️ Housing</div>
+              <div class="platform-pill">🤝 Refugees</div>
+              <div class="platform-pill">👶 Children</div>
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label class="form-label">Bio / Self Introduction</label>
+              <textarea class="form-input" rows="3" style="resize:vertical">Social-impact storyteller using content to amplify underfunded causes. I partner with nonprofits and crowdfunding campaigns to drive real-world change through authentic, community-focused content.</textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:20px;display:flex;gap:12px;justify-content:flex-end">
+        <button class="btn btn-outline">Save Draft</button>
+        <button class="btn btn-primary" onclick="showPage('reg-sns')">Next: Link SNS Accounts →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ PAGE: REG SNS ════════════ -->
+  <div class="page" id="page-reg-sns">
+    <div class="page-content">
+      <div class="page-header">
+        <div class="page-title">Link SNS Accounts</div>
+        <div class="page-subtitle">Connect your social media so nonprofits can verify your reach and match you to causes. You can add multiple accounts per platform.</div>
+      </div>
+
+      <div class="stepper">
+        <div class="step-item done"><div class="step-circle">✓</div><div class="step-label">Profile</div></div>
+        <div class="step-item current"><div class="step-circle">2</div><div class="step-label">Link SNS</div></div>
+        <div class="step-item"><div class="step-circle">3</div><div class="step-label">KYC</div></div>
+        <div class="step-item"><div class="step-circle">4</div><div class="step-label">Tax &amp; Pay</div></div>
+      </div>
+
+      <div class="grid-2">
+        <div>
+          <!-- ADD ACCOUNT PANEL -->
+          <div class="card" style="margin-bottom:16px">
+            <div class="card-title">Add a Social Account</div>
+            <div class="card-sub">Select platform and authenticate. Link at least 2 accounts to apply for campaigns.</div>
+
+            <div style="display:flex;gap:10px;margin-bottom:14px;align-items:flex-end">
+              <div style="flex:1">
+                <label class="form-label">Platform</label>
+                <select class="form-select" id="sns-platform-select" style="width:100%">
+                  <option value="instagram" data-icon="📸">📸  Instagram</option>
+                  <option value="youtube" data-icon="▶️">▶️  YouTube</option>
+                  <option value="twitter" data-icon="𝕏">𝕏   X (Twitter)</option>
+                  <option value="tiktok" data-icon="🎵">🎵  TikTok</option>
+                  <option value="facebook" data-icon="📘">📘  Facebook</option>
+                  <option value="linkedin" data-icon="💼">💼  LinkedIn</option>
+                  <option value="threads" data-icon="🧵">🧵  Threads</option>
+                  <option value="blog" data-icon="🌐">🌐  Personal Blog / Website</option>
+                </select>
+              </div>
+              <div style="flex:1.4">
+                <label class="form-label">Username / Handle / URL</label>
+                <input class="form-input" id="sns-handle-input" placeholder="@username or channel URL" />
+              </div>
+              <button class="btn btn-primary" onclick="addSNSAccount()" style="height:40px;white-space:nowrap">+ Connect</button>
+            </div>
+            <div style="font-size:11.5px;color:var(--slate);background:var(--bg);border-radius:8px;padding:8px 12px;">
+              💡 You can add <strong>multiple accounts</strong> from the same platform (e.g. two Instagram profiles) by selecting the platform and entering each handle separately.
+            </div>
+          </div>
+
+          <!-- CONNECTED ACCOUNTS LIST -->
+          <div class="card">
+            <div class="card-title">Connected Accounts</div>
+            <div class="card-sub">All linked social media accounts</div>
+            <div id="sns-account-list">
+
+              <!-- Instagram account 1 -->
+              <div class="social-row connected" style="margin-bottom:8px">
+                <div class="social-left">
+                  <div class="social-icon">📸</div>
+                  <div>
+                    <div class="social-name">Instagram</div>
+                    <div class="social-handle">@jamie.forchange · 98K followers</div>
+                  </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span class="badge badge-green">Connected ✓</span>
+                  <button class="btn btn-danger btn-sm" onclick="removeSNS(this)">✕</button>
+                </div>
+              </div>
+
+              <!-- Instagram account 2 (second account same platform) -->
+              <div class="social-row connected" style="margin-bottom:8px">
+                <div class="social-left">
+                  <div class="social-icon">📸</div>
+                  <div>
+                    <div class="social-name">Instagram <span style="font-size:10px;background:var(--blue-light);color:var(--blue);border-radius:4px;padding:1px 5px;margin-left:4px">2nd account</span></div>
+                    <div class="social-handle">@jamie_advocacy · 24K followers</div>
+                  </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span class="badge badge-green">Connected ✓</span>
+                  <button class="btn btn-danger btn-sm" onclick="removeSNS(this)">✕</button>
+                </div>
+              </div>
+
+              <!-- YouTube -->
+              <div class="social-row connected" style="margin-bottom:8px">
+                <div class="social-left">
+                  <div class="social-icon">▶️</div>
+                  <div>
+                    <div class="social-name">YouTube</div>
+                    <div class="social-handle">Jamie for Change · 61K subscribers</div>
+                  </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span class="badge badge-green">Connected ✓</span>
+                  <button class="btn btn-danger btn-sm" onclick="removeSNS(this)">✕</button>
+                </div>
+              </div>
+
+              <!-- X / Twitter -->
+              <div class="social-row connected" style="margin-bottom:8px">
+                <div class="social-left">
+                  <div class="social-icon">𝕏</div>
+                  <div>
+                    <div class="social-name">X (Twitter)</div>
+                    <div class="social-handle">@jamie_change · 34K followers</div>
+                  </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span class="badge badge-green">Connected ✓</span>
+                  <button class="btn btn-danger btn-sm" onclick="removeSNS(this)">✕</button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Aggregated Audience Stats</div>
+          <div class="card-sub">Combined across all connected accounts</div>
+          <div class="grid-2" style="margin-bottom:16px">
+            <div class="kpi-mini"><div class="kpi-val" style="color:var(--blue)">217K</div><div class="kpi-lbl">Total Followers</div></div>
+            <div class="kpi-mini"><div class="kpi-val" style="color:var(--green-mid)">5.2%</div><div class="kpi-lbl">Avg Engagement</div></div>
+            <div class="kpi-mini"><div class="kpi-val" style="color:var(--orange-mid)">91%</div><div class="kpi-lbl">Authenticity Score</div></div>
+            <div class="kpi-mini"><div class="kpi-val" style="color:var(--navy)">4</div><div class="kpi-lbl">Accounts Linked</div></div>
+          </div>
+          <div style="font-size:12.5px;color:var(--slate);margin-bottom:10px;font-weight:600">Audience Geography</div>
+          <div style="font-size:13px">
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+              <span>United States</span><div style="display:flex;align-items:center;gap:8px"><div class="progress-wrap" style="width:120px"><div class="progress-bar" style="width:62%;background:var(--blue-mid)"></div></div><span>62%</span></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+              <span>Europe</span><div style="display:flex;align-items:center;gap:8px"><div class="progress-wrap" style="width:120px"><div class="progress-bar" style="width:22%;background:var(--green-mid)"></div></div><span>22%</span></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:16px">
+              <span>Others</span><div style="display:flex;align-items:center;gap:8px"><div class="progress-wrap" style="width:120px"><div class="progress-bar" style="width:16%;background:var(--orange-mid)"></div></div><span>16%</span></div>
+            </div>
+          </div>
+          <div style="font-size:12.5px;color:var(--slate);margin-bottom:10px;font-weight:600">Per-Account Breakdown</div>
+          <div style="font-size:12.5px">
+            <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span>📸 @jamie.forchange</span><span style="font-weight:700">98K · 5.8%</span></div>
+            <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span>📸 @jamie_advocacy</span><span style="font-weight:700">24K · 6.1%</span></div>
+            <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span>▶️ Jamie for Change</span><span style="font-weight:700">61K · 4.4%</span></div>
+            <div style="display:flex;justify-content:space-between;padding:6px 0"><span>𝕏 @jamie_change</span><span style="font-weight:700">34K · 3.9%</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:20px;display:flex;gap:12px;justify-content:flex-end">
+        <button class="btn btn-outline" onclick="showPage('reg-profile')">← Back</button>
+        <button class="btn btn-primary" onclick="showPage('reg-kyc')">Next: Identity Verification →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ PAGE: REG KYC ════════════ -->
+  <div class="page" id="page-reg-kyc">
+    <div class="page-content">
+      <div class="page-header">
+        <div class="page-title">Identity Verification (KYC)</div>
+        <div class="page-subtitle">Submit government-issued ID for account verification. Reviewed within 24 hours.</div>
+      </div>
+      <div class="stepper">
+        <div class="step-item done"><div class="step-circle">✓</div><div class="step-label">Profile</div></div>
+        <div class="step-item done"><div class="step-circle">✓</div><div class="step-label">Link SNS</div></div>
+        <div class="step-item current"><div class="step-circle">3</div><div class="step-label">KYC</div></div>
+        <div class="step-item"><div class="step-circle">4</div><div class="step-label">Tax &amp; Pay</div></div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Document Submission</div>
+          <div class="card-sub">Upload clear, valid government-issued photo ID</div>
+          <div class="form-group">
+            <label class="form-label">ID Type</label>
+            <select class="form-select">
+              <option>Aadhaar Card</option>
+              <option>PAN Card</option>
+              <option>Passport</option>
+              <option>Driver's Licence</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">ID Number</label>
+            <input class="form-input" value="XXXX XXXX 4821" />
+          </div>
+          <div class="upload-box" style="margin-bottom:12px">
+            <div class="upload-icon">🪪</div>
+            <div class="upload-text"><strong>Front of ID</strong> uploaded — aadhaar_front.jpg</div>
+            <div style="font-size:11px;color:var(--green-mid);margin-top:4px">✓ File accepted</div>
+          </div>
+          <div class="upload-box">
+            <div class="upload-icon">🪪</div>
+            <div class="upload-text"><strong>Click to upload</strong> back of ID or drag &amp; drop</div>
+            <div style="font-size:11px;color:var(--slate);margin-top:4px">JPG, PNG — max 5MB</div>
+          </div>
+        </div>
+
+        <div>
+          <div class="card" style="margin-bottom:16px">
+            <div class="card-title">Selfie Verification</div>
+            <div class="card-sub">A selfie holding your ID for liveness check</div>
+            <div class="upload-box">
+              <div class="upload-icon">🤳</div>
+              <div class="upload-text"><strong>selfie_with_id.jpg</strong> uploaded</div>
+              <div style="font-size:11px;color:var(--green-mid);margin-top:4px">✓ Liveness check passed</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Verification Status</div>
+            <div class="card-sub">Current review progress</div>
+            <div class="timeline">
+              <div class="timeline-item">
+                <div class="timeline-dot done"></div>
+                <div class="timeline-title">Documents Submitted</div>
+                <div class="timeline-meta">Apr 18, 2026 · 10:22 AM</div>
+              </div>
+              <div class="timeline-item">
+                <div class="timeline-dot done"></div>
+                <div class="timeline-title">Auto-verification Passed</div>
+                <div class="timeline-meta">Apr 18, 2026 · 10:23 AM</div>
+              </div>
+              <div class="timeline-item">
+                <div class="timeline-dot done"></div>
+                <div class="timeline-title">Manual Review Complete</div>
+                <div class="timeline-meta">Apr 19, 2026 · 2:14 PM</div>
+              </div>
+              <div class="timeline-item">
+                <div class="timeline-dot done"></div>
+                <div class="timeline-title" style="color:var(--green-mid)">KYC Approved ✓</div>
+                <div class="timeline-meta">Apr 19, 2026 · 2:15 PM</div>
+              </div>
+            </div>
+            <div style="margin-top:12px">
+              <span class="badge badge-green" style="font-size:13px;padding:5px 14px">✅ KYC Verified</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:20px;display:flex;gap:12px;justify-content:flex-end">
+        <button class="btn btn-outline" onclick="showPage('reg-sns')">← Back</button>
+        <button class="btn btn-primary" onclick="showPage('reg-tax')">Next: Tax & Payment →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ PAGE: REG TAX ════════════ -->
+  <div class="page" id="page-reg-tax">
+    <div class="page-content">
+      <div class="page-header">
+        <div class="page-title">Payment Registration</div>
+        <div class="page-subtitle">Add your bank account to receive creator stipends and campaign compensation from Socia.</div>
+      </div>
+      <div class="stepper">
+        <div class="step-item done"><div class="step-circle">✓</div><div class="step-label">Profile</div></div>
+        <div class="step-item done"><div class="step-circle">✓</div><div class="step-label">Link SNS</div></div>
+        <div class="step-item done"><div class="step-circle">✓</div><div class="step-label">KYC</div></div>
+        <div class="step-item current"><div class="step-circle">4</div><div class="step-label">Payment</div></div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Bank Account for Payouts</div>
+          <div class="card-sub">All creator stipends and cause-match bonuses will be deposited here</div>
+          <div class="form-group">
+            <label class="form-label">Account Holder Name *</label>
+            <input class="form-input" placeholder="Exactly as registered with your bank" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Bank Name *</label>
+            <select class="form-select">
+              <option>Chase Bank</option>
+              <option>Bank of America</option>
+              <option>Wells Fargo</option>
+              <option>Citibank</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Account Number *</label>
+            <input class="form-input" placeholder="Enter account number" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Routing Number *</label>
+            <input class="form-input" placeholder="9-digit routing number" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Account Type</label>
+            <select class="form-select">
+              <option>Checking</option>
+              <option>Savings</option>
+            </select>
+          </div>
+          <div style="background:var(--orange-light);border:1px solid var(--orange-mid);border-radius:10px;padding:12px;font-size:12.5px;color:var(--orange)">
+            ⚠️ A $0.01 test deposit will verify your account. This may take 1–2 business days. Socia deducts a <strong>3.5% platform fee</strong> before all disbursements.
+          </div>
+        </div>
+
+        <div>
+          <div class="card" style="margin-bottom:16px">
+            <div class="card-title">Payout Summary</div>
+            <div class="card-sub">How stipends are calculated and paid</div>
+            <div style="background:var(--bg);border-radius:10px;padding:14px;font-size:13px">
+              <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span>Base Stipend per Campaign</span><span style="font-weight:700">Varies ($200–$800)</span></div>
+              <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span>Goal-Met Bonus</span><span style="font-weight:700">Up to +$150</span></div>
+              <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span>Platform Fee (Socia)</span><span style="font-weight:700;color:var(--orange)">–3.5%</span></div>
+              <div style="display:flex;justify-content:space-between;padding:6px 0"><span style="font-weight:700">Net Payout</span><span style="font-weight:800;color:var(--green-mid)">Deposited within 7 days</span></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Payout Schedule</div>
+            <div class="card-sub">When you'll receive payments</div>
+            <div style="font-size:13px;line-height:1.9;color:var(--text)">
+              🗓️ Payouts are processed <strong>within 7 business days</strong> of content approval.<br>
+              💳 Funds arrive via ACH bank transfer to the account above.<br>
+              📩 You'll receive an email confirmation for every transaction.<br>
+              📊 Full history is available in the <strong>Earnings</strong> section.
+            </div>
+            <button class="btn btn-outline btn-sm" style="margin-top:12px" onclick="showPage('earnings')">View Earnings →</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:20px;display:flex;gap:12px;justify-content:flex-end">
+        <button class="btn btn-outline" onclick="showPage('reg-kyc')">← Back</button>
+        <button class="btn btn-green" onclick="showPage('proj-search')">Save & Complete Registration ✓</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ PAGE: MY ACTIVE PROJECTS ════════════ -->
+  <div class="page" id="page-proj-active">
+    <div class="page-content">
+      <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+          <div class="page-title">My Active Projects</div>
+          <div class="page-subtitle">All campaigns you have accepted and are currently promoting through Socia.</div>
+        </div>
+        <button class="btn btn-primary" onclick="showPage('proj-search')">🔍 Browse More Causes</button>
+      </div>
+
+      <!-- Stat row -->
+      <div class="grid-4" id="active-stats-row" style="margin-bottom:20px">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:var(--blue-light)">🗂️</div>
+          <div><div class="stat-value" id="stat-active-count">2</div><div class="stat-label">Active Campaigns</div><div class="stat-delta up">In progress</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:var(--green-light)">💵</div>
+          <div><div class="stat-value" id="stat-stipends">$850</div><div class="stat-label">Stipends Locked In</div><div class="stat-delta up">On completion</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:var(--orange-light)">📤</div>
+          <div><div class="stat-value" id="stat-deliverables">2/5</div><div class="stat-label">Deliverables Submitted</div><div class="stat-delta down" id="stat-deliverables-sub">3 pending</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#F3E5F5">⏰</div>
+          <div><div class="stat-value" id="stat-deadline">2d</div><div class="stat-label">Nearest Deadline</div><div class="stat-delta down" id="stat-deadline-sub">Feed the Future</div></div>
+        </div>
+      </div>
+
+      <!-- ── Active Projects (rendered by JS) ── -->
+      <div id="active-projects-container">
+
+      <!-- ── Active Project 1 ── -->
+      <div class="card" style="margin-bottom:20px;border-left:4px solid var(--orange-mid)">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:14px;margin-bottom:16px">
+          <div style="display:flex;gap:14px;align-items:flex-start;flex:1">
+            <div style="width:54px;height:54px;border-radius:12px;background:linear-gradient(135deg,#E65100,#FB8C00);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0">🍽️</div>
+            <div>
+              <div style="font-weight:800;font-size:16px;color:var(--navy)">Daily Meals for Homeless Families</div>
+              <div style="font-size:12.5px;color:var(--slate);margin-top:2px">Feed the Future · GoFundMe · Food Relief</div>
+              <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap">
+                <span class="badge badge-orange">⏰ Closes Apr 25 — 2 days</span>
+                <span style="background:var(--green-light);color:var(--green);padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:700">Raise $100K → Get $500</span>
+              </div>
+            </div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:11px;color:var(--slate)">Your stipend</div>
+            <div style="font-size:22px;font-weight:800;font-family:'Plus Jakarta Sans',sans-serif;color:var(--green-mid)">$500</div>
+            <div style="font-size:11px;color:var(--slate)">+ $100 goal-met bonus</div>
+          </div>
+        </div>
+
+        <!-- Fundraising progress -->
+        <div style="margin-bottom:14px">
+          <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px">
+            <span style="font-weight:700;color:var(--navy)">$88,000 raised</span>
+            <span style="color:var(--slate)">$100,000 goal · 88%</span>
+          </div>
+          <div class="progress-wrap"><div class="progress-bar" style="width:88%;background:var(--orange-mid)"></div></div>
+          <div style="font-size:11px;color:var(--slate);margin-top:4px">$12,000 remaining to unlock your full bonus stipend</div>
+        </div>
+
+        <!-- Deliverables tracker -->
+        <div style="background:var(--bg);border-radius:10px;padding:14px;margin-bottom:14px">
+          <div style="font-weight:700;font-size:12.5px;color:var(--navy);margin-bottom:10px;text-transform:uppercase;letter-spacing:.4px">Deliverable Tracker</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+            <div style="background:#fff;border-radius:9px;padding:10px;border:1.5px solid var(--green-mid);text-align:center">
+              <div style="font-size:18px">📸</div>
+              <div style="font-size:12px;font-weight:700;margin-top:4px">Instagram Reel</div>
+              <div style="margin-top:4px"><span class="badge badge-green" style="font-size:10px">Approved ✓</span></div>
+            </div>
+            <div style="background:#fff;border-radius:9px;padding:10px;border:1.5px solid var(--green-mid);text-align:center">
+              <div style="font-size:18px">▶️</div>
+              <div style="font-size:12px;font-weight:700;margin-top:4px">YouTube Doc</div>
+              <div style="margin-top:4px"><span class="badge badge-green" style="font-size:10px">Approved ✓</span></div>
+            </div>
+            <div style="background:#fff;border-radius:9px;padding:10px;border:1.5px solid var(--orange-mid);text-align:center">
+              <div style="font-size:18px">📱</div>
+              <div style="font-size:12px;font-weight:700;margin-top:4px">Story Set</div>
+              <div style="margin-top:4px"><span class="badge badge-red" style="font-size:10px">Revision ⚠️</span></div>
+            </div>
+          </div>
+          <div style="margin-top:10px;background:var(--red-light);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--red)">
+            ⚠️ Story Set needs resubmission — missing GoFundMe link in swipe-up. <span style="text-decoration:underline;cursor:pointer" onclick="showPage('post-review')">Fix now →</span>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-primary btn-sm" onclick="showPage('post-materials')">📦 Campaign Assets</button>
+          <button class="btn btn-outline btn-sm" onclick="showPage('post-submit')">🔗 Submit URL</button>
+          <button class="btn btn-outline btn-sm" onclick="showPage('post-review')">🔎 Review Status</button>
+        </div>
+      </div>
+
+      <!-- ── Active Project 2 ── -->
+      <div class="card" style="border-left:4px solid var(--blue-mid)">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:14px;margin-bottom:16px">
+          <div style="display:flex;gap:14px;align-items:flex-start;flex:1">
+            <div style="width:54px;height:54px;border-radius:12px;background:linear-gradient(135deg,#1565C0,#43A047);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0">🏫</div>
+            <div>
+              <div style="font-weight:800;font-size:16px;color:var(--navy)">Build a School in Rural Ghana</div>
+              <div style="font-size:12.5px;color:var(--slate);margin-top:2px">Pencils of Promise · Kickstarter · Education</div>
+              <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap">
+                <span class="badge badge-blue">📅 Closes May 10 — 20 days</span>
+                <span style="background:var(--green-light);color:var(--green);padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:700">Raise $75K → Get $350</span>
+              </div>
+            </div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:11px;color:var(--slate)">Your stipend</div>
+            <div style="font-size:22px;font-weight:800;font-family:'Plus Jakarta Sans',sans-serif;color:var(--green-mid)">$350</div>
+            <div style="font-size:11px;color:var(--slate)">+ $100 goal-met bonus</div>
+          </div>
+        </div>
+
+        <!-- Fundraising progress -->
+        <div style="margin-bottom:14px">
+          <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px">
+            <span style="font-weight:700;color:var(--navy)">$54,200 raised</span>
+            <span style="color:var(--slate)">$75,000 goal · 72%</span>
+          </div>
+          <div class="progress-wrap"><div class="progress-bar" style="width:72%;background:var(--blue-mid)"></div></div>
+          <div style="font-size:11px;color:var(--slate);margin-top:4px">$20,800 remaining — your content drives every dollar</div>
+        </div>
+
+        <!-- Deliverables tracker -->
+        <div style="background:var(--bg);border-radius:10px;padding:14px;margin-bottom:14px">
+          <div style="font-weight:700;font-size:12.5px;color:var(--navy);margin-bottom:10px;text-transform:uppercase;letter-spacing:.4px">Deliverable Tracker</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+            <div style="background:#fff;border-radius:9px;padding:10px;border:1.5px solid var(--border);text-align:center">
+              <div style="font-size:18px">📸</div>
+              <div style="font-size:12px;font-weight:700;margin-top:4px">Instagram Reel</div>
+              <div style="margin-top:4px"><span class="badge badge-orange" style="font-size:10px">Pending</span></div>
+            </div>
+            <div style="background:#fff;border-radius:9px;padding:10px;border:1.5px solid var(--border);text-align:center">
+              <div style="font-size:18px">▶️</div>
+              <div style="font-size:12px;font-weight:700;margin-top:4px">YouTube Short</div>
+              <div style="margin-top:4px"><span class="badge badge-orange" style="font-size:10px">Pending</span></div>
+            </div>
+            <div style="background:#fff;border-radius:9px;padding:10px;border:1.5px solid var(--border);text-align:center">
+              <div style="font-size:18px">📝</div>
+              <div style="font-size:12px;font-weight:700;margin-top:4px">Caption + Link</div>
+              <div style="margin-top:4px"><span class="badge badge-orange" style="font-size:10px">Pending</span></div>
+            </div>
+          </div>
+          <div style="margin-top:10px;background:var(--blue-light);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--blue)">
+            💡 Download your <strong>Sample Script</strong> and <strong>Project Overview PDF</strong> to get started.
+          </div>
+        </div>
+
+        <!-- Accepted downloads -->
+        <div style="background:var(--bg);border-radius:10px;padding:14px;margin-bottom:14px">
+          <div style="font-weight:700;font-size:12.5px;color:var(--navy);margin-bottom:10px;text-transform:uppercase;letter-spacing:.4px">📥 Quick Downloads</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+            <button class="btn btn-outline btn-sm" style="justify-content:center">📋 Project Overview PDF</button>
+            <button class="btn btn-outline btn-sm" style="justify-content:center">🎬 Sample Script</button>
+            <button class="btn btn-outline btn-sm" style="justify-content:center" onclick="showPage('post-materials')">🖼️ Full Asset Kit →</button>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-primary btn-sm" onclick="showPage('post-materials')">📦 Campaign Assets</button>
+          <button class="btn btn-outline btn-sm" onclick="showPage('post-submit')">🔗 Submit URL</button>
+          <button class="btn btn-outline btn-sm" onclick="showPage('post-review')">🔎 Review Status</button>
+        </div>
+      </div>
+
+      </div><!-- /active-projects-container -->
+
+      <!-- Completed projects toggle -->
+      <div class="mt-20">
+        <div class="card">
+          <div class="card-title" id="completed-projects-title">✅ Completed Projects (6)</div>
+          <div class="card-sub">Campaigns you have fully delivered and been paid for</div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Project</th><th>Organisation</th><th>Platform</th><th>Completed</th><th>Stipend</th><th>Status</th></tr></thead>
+              <tbody id="completed-tbody">
+                <tr>
+                  <td>🌊 Clean Water Wells – Bangladesh</td>
+                  <td>charity: water</td>
+                  <td>Kickstarter</td>
+                  <td>Mar 31</td>
+                  <td style="font-weight:700;color:var(--green-mid)">$380</td>
+                  <td><span class="badge badge-green">Paid ✓</span></td>
+                </tr>
+                <tr>
+                  <td>🤝 Refugee Welcome Fund</td>
+                  <td>IRC</td>
+                  <td>Kickstarter</td>
+                  <td>Mar 15</td>
+                  <td style="font-weight:700;color:var(--green-mid)">$600</td>
+                  <td><span class="badge badge-green">Paid ✓</span></td>
+                </tr>
+                <tr>
+                  <td>🏫 Schools for All – Ethiopia</td>
+                  <td>Pencils of Promise</td>
+                  <td>Kickstarter</td>
+                  <td>Feb 28</td>
+                  <td style="font-weight:700;color:var(--green-mid)">$450</td>
+                  <td><span class="badge badge-green">Paid ✓</span></td>
+                </tr>
+                <tr>
+                  <td>🏥 Vaccination Drive – West Africa</td>
+                  <td>UNICEF Indiegogo</td>
+                  <td>Indiegogo</td>
+                  <td>Jan 31</td>
+                  <td style="font-weight:700;color:var(--green-mid)">$350</td>
+                  <td><span class="badge badge-green">Paid ✓</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ PAGE: PROJECT SEARCH ════════════ -->
+  <div class="page" id="page-proj-search">
+    <div class="page-content">
+      <div class="page-header flex justify-between items-center">
+        <div>
+          <div class="page-title">Project Search</div>
+          <div class="page-subtitle">Browse active cause campaigns sourced from Kickstarter, GoFundMe, and verified nonprofits.</div>
+        </div>
+        <div class="flex" style="gap:8px">
+          <input class="form-input" style="width:220px" placeholder="🔍  Search causes..." />
+          <select class="form-select" style="width:160px">
+            <option>All Categories</option>
+            <option>Education</option>
+            <option>Food Relief</option>
+            <option>Refugees</option>
+            <option>Healthcare</option>
+            <option>Environment</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Filter tabs -->
+      <div class="tab-row">
+        <button class="tab-btn active">All (47)</button>
+        <button class="tab-btn">Open (12)</button>
+        <button class="tab-btn">Invited (5)</button>
+        <button class="tab-btn">Deadline Soon (4)</button>
+        <button class="tab-btn">Closed</button>
+      </div>
+
+      <div class="grid-3" id="project-search-grid">
+        <!-- card 1 -->
+        <div class="proj-card" onclick="showPage('proj-apply')">
+          <div class="proj-card-img" style="background:linear-gradient(135deg,#1565C0,#43A047)">🏫</div>
+          <div class="proj-card-body">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start">
+              <div class="proj-card-title">Build a School in Rural Ghana</div>
+              <span class="badge badge-green">Open</span>
+            </div>
+            <div class="proj-card-brand">Pencils of Promise · Kickstarter · Education</div>
+            <div class="progress-wrap"><div class="progress-bar" style="width:72%;background:var(--blue-mid)"></div></div>
+            <div style="font-size:11px;color:var(--slate);margin-top:4px">$54,200 raised of $75,000 goal</div>
+            <div class="proj-card-footer">
+              <div>
+                <div style="font-size:11px;color:var(--slate)">Raise → Earn</div>
+                <div style="font-weight:700;color:var(--green-mid);font-size:12.5px">Raise $75K → Get $350</div>
+              </div>
+              <div>
+                <div style="font-size:11px;color:var(--slate)">Deadline</div>
+                <div style="font-weight:600;font-size:12px">May 10</div>
+              </div>
+            </div>
+            <div style="margin-top:10px">
+              <span class="tag">Instagram Reel</span>
+              <span class="tag">YouTube Short</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- card 2 -->
+        <div class="proj-card" onclick="showPage('proj-apply')">
+          <div class="proj-card-img" style="background:linear-gradient(135deg,#E65100,#FB8C00)">🍽️</div>
+          <div class="proj-card-body">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start">
+              <div class="proj-card-title">Daily Meals for Homeless Families</div>
+              <span class="badge badge-orange">Closing Soon</span>
+            </div>
+            <div class="proj-card-brand">Feed the Future · GoFundMe · Food Relief</div>
+            <div class="progress-wrap"><div class="progress-bar" style="width:88%;background:var(--orange-mid)"></div></div>
+            <div style="font-size:11px;color:var(--slate);margin-top:4px">$88,000 raised of $100,000 goal</div>
+            <div class="proj-card-footer">
+              <div><div style="font-size:11px;color:var(--slate)">Raise → Earn</div><div style="font-weight:700;color:var(--green-mid);font-size:12.5px">Raise $100K → Get $500</div></div>
+              <div><div style="font-size:11px;color:var(--slate)">Deadline</div><div style="font-weight:600;font-size:12px">Apr 25</div></div>
+            </div>
+            <div style="margin-top:10px"><span class="tag">YouTube Doc</span><span class="tag">Instagram</span></div>
+          </div>
+        </div>
+
+        <!-- card 3 -->
+        <div class="proj-card" onclick="showPage('proj-apply')">
+          <div class="proj-card-img" style="background:linear-gradient(135deg,#1A237E,#1E88E5)">🤝</div>
+          <div class="proj-card-body">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start">
+              <div class="proj-card-title">Legal Aid for Syrian Refugees</div>
+              <span class="badge badge-blue">Invited</span>
+            </div>
+            <div class="proj-card-brand">IRC · Kickstarter · Refugees &amp; Immigration</div>
+            <div class="progress-wrap"><div class="progress-bar" style="width:42%;background:var(--blue-mid)"></div></div>
+            <div style="font-size:11px;color:var(--slate);margin-top:4px">$21,000 raised of $50,000 goal</div>
+            <div class="proj-card-footer">
+              <div><div style="font-size:11px;color:var(--slate)">Raise → Earn</div><div style="font-weight:700;color:var(--green-mid);font-size:12.5px">Raise $50K → Get $600</div></div>
+              <div><div style="font-size:11px;color:var(--slate)">Deadline</div><div style="font-weight:600;font-size:12px">May 20</div></div>
+            </div>
+            <div style="margin-top:10px"><span class="tag">Blog Post</span><span class="tag">Instagram Story</span></div>
+          </div>
+        </div>
+
+        <!-- card 4 -->
+        <div class="proj-card">
+          <div class="proj-card-img" style="background:linear-gradient(135deg,#2E7D32,#A5D6A7)">💉</div>
+          <div class="proj-card-body">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start">
+              <div class="proj-card-title">Mobile Clinics for Rural Kenya</div>
+              <span class="badge badge-green">Open</span>
+            </div>
+            <div class="proj-card-brand">Doctors Without Borders · Indiegogo · Healthcare</div>
+            <div class="progress-wrap"><div class="progress-bar" style="width:53%;background:var(--green-mid)"></div></div>
+            <div style="font-size:11px;color:var(--slate);margin-top:4px">$79,500 raised of $150,000 goal</div>
+            <div class="proj-card-footer">
+              <div><div style="font-size:11px;color:var(--slate)">Raise → Earn</div><div style="font-weight:700;color:var(--green-mid);font-size:12.5px">Raise $150K → Get $450</div></div>
+              <div><div style="font-size:11px;color:var(--slate)">Deadline</div><div style="font-weight:600;font-size:12px">Jun 1</div></div>
+            </div>
+            <div style="margin-top:10px"><span class="tag">YouTube Vlog</span><span class="tag">Reels</span></div>
+          </div>
+        </div>
+
+        <!-- card 5 -->
+        <div class="proj-card">
+          <div class="proj-card-img" style="background:linear-gradient(135deg,#37474F,#78909C)">🏘️</div>
+          <div class="proj-card-body">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start">
+              <div class="proj-card-title">Emergency Housing for Flood Survivors</div>
+              <span class="badge badge-green">Open</span>
+            </div>
+            <div class="proj-card-brand">Habitat for Humanity · GoFundMe · Housing</div>
+            <div class="progress-wrap"><div class="progress-bar" style="width:19%;background:var(--blue-mid)"></div></div>
+            <div style="font-size:11px;color:var(--slate);margin-top:4px">$9,500 raised of $50,000 goal</div>
+            <div class="proj-card-footer">
+              <div><div style="font-size:11px;color:var(--slate)">Raise → Earn</div><div style="font-weight:700;color:var(--green-mid);font-size:12.5px">Raise $50K → Get $400</div></div>
+              <div><div style="font-size:11px;color:var(--slate)">Deadline</div><div style="font-weight:600;font-size:12px">May 30</div></div>
+            </div>
+            <div style="margin-top:10px"><span class="tag">YouTube</span><span class="tag">Twitter Thread</span></div>
+          </div>
+        </div>
+
+        <!-- card 6 -->
+        <div class="proj-card">
+          <div class="proj-card-img" style="background:linear-gradient(135deg,#004D40,#26A69A)">♻️</div>
+          <div class="proj-card-body">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start">
+              <div class="proj-card-title">Clean Water Wells in Bangladesh</div>
+              <span class="badge badge-gray">Coming Soon</span>
+            </div>
+            <div class="proj-card-brand">charity: water · Kickstarter · Environment</div>
+            <div class="progress-wrap"><div class="progress-bar" style="width:0%;background:var(--blue-mid)"></div></div>
+            <div style="font-size:11px;color:var(--slate);margin-top:4px">Opens May 1</div>
+            <div class="proj-card-footer">
+              <div><div style="font-size:11px;color:var(--slate)">Raise → Earn</div><div style="font-weight:700;color:var(--navy)">Raise $60K → TBD</div></div>
+              <div><div style="font-size:11px;color:var(--slate)">Deadline</div><div style="font-weight:600;font-size:12px">Jun 15</div></div>
+            </div>
+            <div style="margin-top:10px"><span class="tag">Instagram</span><span class="tag">Blog</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ PAGE: APPLY ════════════ -->
+  <div class="page" id="page-proj-apply">
+    <div class="page-content">
+      <div class="page-header flex justify-between items-center">
+        <div>
+          <div class="page-title">Project Application</div>
+          <div class="page-subtitle">Build a School in Rural Ghana · Pencils of Promise (Kickstarter)</div>
+        </div>
+        <span class="badge badge-green" style="font-size:13px;padding:5px 14px">Open for Applications</span>
+      </div>
+
+      <div class="grid-21">
+        <div>
+          <div class="card" style="margin-bottom:16px">
+            <div class="card-title">Campaign Brief</div>
+            <div class="card-sub">Read carefully before applying</div>
+            <div style="font-size:13.5px;line-height:1.7;color:var(--text)">
+              Pencils of Promise is crowdfunding a new primary school in the Volta Region of Ghana to serve 320 children who currently walk 6+ miles to the nearest classroom. We need passionate creators to tell this story, drive donations, and help us reach the $75,000 goal on Kickstarter before May 10.
+            </div>
+            <div class="grid-2" style="margin-top:16px;gap:10px">
+              <div><div style="font-size:11.5px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Deliverables</div>
+                <div style="font-size:13px">1× Instagram Reel (60–90s)<br>1× YouTube Short or Story set<br>1× Caption with campaign link</div>
+              </div>
+              <div><div style="font-size:11.5px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Timeline</div>
+                <div style="font-size:13px">Brief: Apr 28<br>Content Due: May 6<br>Campaign Close: May 10</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Self-Introduction / Pitch</div>
+            <div class="card-sub">Tell the nonprofit why you're the right creator for this cause</div>
+            <div class="form-group">
+              <label class="form-label">Why are you passionate about this campaign?</label>
+              <textarea class="form-input" rows="4">Education access is something I care deeply about — I've previously raised $12,000 for a school-supplies drive. My audience of 98K skews toward young professionals aged 25–40 who are cause-driven donors. I'll frame the story around the children's daily journey and what a school would mean for their futures.</textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Past Similar Work (URL)</label>
+              <input class="form-input" value="https://youtube.com/watch?v=abc123xyz" />
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label class="form-label">Proposed Content Angle</label>
+              <input class="form-input" value="A day in the life of a child who has no school — and what your $10 can build" />
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="card" style="margin-bottom:16px">
+            <div class="card-title">Creator Stipend</div>
+            <div style="text-align:center;padding:16px 0">
+              <div style="font-size:32px;font-weight:800;font-family:'Plus Jakarta Sans',sans-serif;color:var(--green-mid)">$350</div>
+              <div style="font-size:12.5px;color:var(--slate)">+ Official Impact Certificate</div>
+            </div>
+            <div style="background:var(--bg);border-radius:10px;padding:12px;font-size:12.5px">
+              <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span>Base Stipend</span><span style="font-weight:600">$350</span></div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span>Bonus if goal met</span><span style="font-weight:600">+$100</span></div>
+              <div style="display:flex;justify-content:space-between;border-top:1px solid var(--border);padding-top:6px"><span style="font-weight:700">Max Earning</span><span style="font-weight:800;color:var(--green-mid)">$450</span></div>
+            </div>
+            <div style="margin-top:12px;background:var(--green-light);border-radius:8px;padding:10px;font-size:12px;color:var(--green)">
+              🌍 Your content will directly contribute to building classrooms for 320 children.
+            </div>
+          </div>
+
+          <div class="card" style="margin-bottom:16px">
+            <div class="card-title">My Cause Fit Score</div>
+            <div style="text-align:center;padding:10px">
+              <svg viewBox="0 0 80 80" width="80" height="80">
+                <circle cx="40" cy="40" r="30" fill="none" stroke="var(--border)" stroke-width="8"/>
+                <circle cx="40" cy="40" r="30" fill="none" stroke="var(--green-mid)" stroke-width="8"
+                  stroke-dasharray="160 189" stroke-dashoffset="47" stroke-linecap="round" transform="rotate(-90 40 40)"/>
+                <text x="40" y="45" text-anchor="middle" font-size="16" font-weight="800" fill="var(--navy)">85%</text>
+              </svg>
+              <div style="font-size:12px;color:var(--slate)">Strong match — Education cause creator</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Platforms to Use</div>
+            <div style="margin-top:10px">
+              <div class="social-row connected" style="margin-bottom:8px">
+                <div class="social-left"><div class="social-icon">📸</div><div><div class="social-name">Instagram</div><div class="social-handle">98K followers</div></div></div>
+                <input type="checkbox" checked style="width:16px;height:16px" />
+              </div>
+              <div class="social-row connected" style="margin-bottom:8px">
+                <div class="social-left"><div class="social-icon">▶️</div><div><div class="social-name">YouTube</div><div class="social-handle">61K subscribers</div></div></div>
+                <input type="checkbox" checked style="width:16px;height:16px" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:20px;display:flex;gap:12px;justify-content:flex-end">
+        <button class="btn btn-outline" onclick="showPage('proj-search')">← Back to Search</button>
+        <button class="btn btn-primary" onclick="showPage('proj-accept')">Submit Application →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ PAGE: ACCEPT / DECLINE ════════════ -->
+  <div class="page" id="page-proj-accept">
+    <div class="page-content">
+      <div class="page-header">
+        <div class="page-title">Accept / Decline Offers</div>
+        <div class="page-subtitle">Review incoming campaign invitations from nonprofits and crowdfunding projects.</div>
+      </div>
+
+      <div class="tab-row">
+        <button class="tab-btn active">Pending (3)</button>
+        <button class="tab-btn">Accepted (8)</button>
+        <button class="tab-btn">Declined (2)</button>
+      </div>
+
+      <div class="card" style="margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
+          <div style="flex:1">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+              <div style="font-size:22px">🏫</div>
+              <div>
+                <div style="font-weight:700;font-size:15px">Build a School in Rural Ghana</div>
+                <div style="font-size:12px;color:var(--slate)">Pencils of Promise · Kickstarter · Invited Apr 19</div>
+              </div>
+              <span class="badge badge-orange" style="margin-left:8px">Expires in 2 days</span>
+            </div>
+            <div style="font-size:13px;color:var(--text);margin-bottom:10px;max-width:600px">1× Instagram Reel + 1× YouTube Short promoting the school build fundraiser. Creator stipend: <strong>$350 + $100 goal-met bonus</strong>. Campaign closes May 10.</div>
+            <div style="display:flex;gap:8px">
+              <span class="tag">Education</span><span class="tag">Kickstarter</span><span class="tag">$350</span>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;min-width:140px">
+            <button class="btn btn-green" onclick="showPage('post-materials')">✓ Accept</button>
+            <button class="btn btn-danger">✕ Decline</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
+          <div style="flex:1">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+              <div style="font-size:22px">🤝</div>
+              <div>
+                <div style="font-weight:700;font-size:15px">Legal Aid for Syrian Refugees</div>
+                <div style="font-size:12px;color:var(--slate)">International Rescue Committee · Kickstarter · Invited Apr 20</div>
+              </div>
+              <span class="badge badge-blue" style="margin-left:8px">New Invite</span>
+            </div>
+            <div style="font-size:13px;color:var(--text);margin-bottom:10px;max-width:600px">Blog post + Instagram story series raising awareness and donations for refugee legal support services. Creator stipend: <strong>$600 + Impact Report</strong>. Go-live: May 20.</div>
+            <div style="display:flex;gap:8px"><span class="tag">Refugees</span><span class="tag">Blog + Instagram</span><span class="tag">$600</span></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;min-width:140px">
+            <button class="btn btn-green">✓ Accept</button>
+            <button class="btn btn-danger">✕ Decline</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
+          <div style="flex:1">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+              <div style="font-size:22px">💉</div>
+              <div>
+                <div style="font-weight:700;font-size:15px">Mobile Clinics for Rural Kenya</div>
+                <div style="font-size:12px;color:var(--slate)">Doctors Without Borders · Indiegogo · Invited Apr 20</div>
+              </div>
+            </div>
+            <div style="font-size:13px;color:var(--text);margin-bottom:10px;max-width:600px">YouTube vlog + 2 Reels documenting healthcare gaps in rural Kenya and driving donations to fund mobile clinic trucks. Creator stipend: <strong>$450 + Field Story credit</strong>. Go-live: Jun 1.</div>
+            <div style="display:flex;gap:8px"><span class="tag">Healthcare</span><span class="tag">YouTube + Reels</span><span class="tag">$450</span></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;min-width:140px">
+            <button class="btn btn-green">✓ Accept</button>
+            <button class="btn btn-danger">✕ Decline</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ PAGE: MATERIALS ════════════ -->
+  <div class="page" id="page-post-materials">
+    <div class="page-content">
+      <div class="page-header">
+        <div class="page-title">Campaign Assets & Downloads</div>
+        <div class="page-subtitle">Everything you need to create content for your accepted campaigns — briefs, scripts, brand kits, and field media.</div>
+      </div>
+
+      <div class="tab-row">
+        <button class="tab-btn active">Active Campaigns (2)</button>
+        <button class="tab-btn">Completed (6)</button>
+        <button class="tab-btn">All Assets</button>
+      </div>
+
+      <!-- ─ Campaign 1: Feed the Future ─ -->
+      <div class="card" style="margin-bottom:20px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <div>
+            <div class="card-title">🍽️ Daily Meals for Homeless Families</div>
+            <div style="font-size:12px;color:var(--slate)">Feed the Future · GoFundMe · Deadline: Apr 25, 2026</div>
+          </div>
+          <span class="badge badge-green">Active</span>
+        </div>
+
+        <!-- Key downloads highlight row -->
+        <div class="grid-3" style="margin:14px 0;gap:12px">
+          <div style="background:var(--blue-light);border:1.5px solid var(--blue-mid);border-radius:12px;padding:14px;text-align:center;cursor:pointer" onclick="">
+            <div style="font-size:26px;margin-bottom:6px">📋</div>
+            <div style="font-weight:700;font-size:13px;color:var(--navy)">Project Overview PDF</div>
+            <div style="font-size:11.5px;color:var(--slate);margin:4px 0">Complete campaign brief, goals, timeline, messaging dos & don'ts</div>
+            <button class="btn btn-primary btn-sm" style="margin-top:8px;width:100%">⬇ Download PDF</button>
+          </div>
+          <div style="background:var(--green-light);border:1.5px solid var(--green-mid);border-radius:12px;padding:14px;text-align:center;cursor:pointer">
+            <div style="font-size:26px;margin-bottom:6px">🎬</div>
+            <div style="font-weight:700;font-size:13px;color:var(--navy)">Sample Content Script</div>
+            <div style="font-size:11.5px;color:var(--slate);margin:4px 0">Word-for-word script for Reels & YouTube Shorts with key talking points</div>
+            <button class="btn btn-green btn-sm" style="margin-top:8px;width:100%">⬇ Download Script</button>
+          </div>
+          <div style="background:var(--orange-light);border:1.5px solid var(--orange-mid);border-radius:12px;padding:14px;text-align:center;cursor:pointer">
+            <div style="font-size:26px;margin-bottom:6px">🖼️</div>
+            <div style="font-weight:700;font-size:13px;color:var(--navy)">Brand & Media Kit</div>
+            <div style="font-size:11.5px;color:var(--slate);margin:4px 0">Logos, approved photos, social media templates, and colour palette</div>
+            <button class="btn btn-outline btn-sm" style="margin-top:8px;width:100%;border-color:var(--orange-mid);color:var(--orange)">⬇ Download ZIP</button>
+          </div>
+        </div>
+
+        <!-- Full asset table -->
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Asset</th><th>Type</th><th>Size</th><th>Added</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>📋 <strong>Project Overview & Brief</strong></td>
+                <td><span class="badge badge-orange">PDF</span></td>
+                <td>2.4 MB</td>
+                <td>Apr 18</td>
+                <td><button class="btn btn-primary btn-sm">⬇ Download</button></td>
+              </tr>
+              <tr>
+                <td>🎬 <strong>Sample Script (Reel + YouTube)</strong></td>
+                <td><span class="badge badge-orange">PDF</span></td>
+                <td>0.6 MB</td>
+                <td>Apr 18</td>
+                <td><button class="btn btn-primary btn-sm">⬇ Download</button></td>
+              </tr>
+              <tr>
+                <td>📝 Messaging Guide & Key Statistics</td>
+                <td><span class="badge badge-orange">PDF</span></td>
+                <td>1.1 MB</td>
+                <td>Apr 18</td>
+                <td><button class="btn btn-outline btn-sm">⬇ Download</button></td>
+              </tr>
+              <tr>
+                <td>🎨 Brand Colour & Tone Guide</td>
+                <td><span class="badge badge-orange">PDF</span></td>
+                <td>0.9 MB</td>
+                <td>Apr 19</td>
+                <td><button class="btn btn-outline btn-sm">⬇ Download</button></td>
+              </tr>
+              <tr>
+                <td>🖼️ Feed the Future Logo Pack</td>
+                <td><span class="badge badge-blue">ZIP</span></td>
+                <td>4.2 MB</td>
+                <td>Apr 18</td>
+                <td><button class="btn btn-outline btn-sm">⬇ Download</button></td>
+              </tr>
+              <tr>
+                <td>📸 Field Photography – Nairobi (HiRes)</td>
+                <td><span class="badge badge-blue">ZIP</span></td>
+                <td>38.6 MB</td>
+                <td>Apr 20</td>
+                <td><button class="btn btn-outline btn-sm">⬇ Download</button></td>
+              </tr>
+              <tr>
+                <td>📱 Social Media Templates (Canva)</td>
+                <td><span class="badge badge-gray">LINK</span></td>
+                <td>—</td>
+                <td>Apr 20</td>
+                <td><button class="btn btn-outline btn-sm">🔗 Open</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Inline script preview -->
+        <div style="margin-top:16px;background:var(--bg);border-radius:10px;padding:14px;border-left:4px solid var(--green-mid)">
+          <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:8px;text-transform:uppercase;letter-spacing:.4px">📌 Sample Script Preview</div>
+          <div style="font-size:13px;line-height:1.8;color:var(--text);font-style:italic">
+            "Every day, thousands of families in Nairobi go to sleep hungry — not because food doesn't exist, but because it simply can't reach them. Feed the Future is changing that. Through a network of 40 community kitchens across 4 districts, they're delivering over 48,000 nutritious meals every single month. For just $10 — less than a coffee — you can feed a child for a week. The link is in my bio. Let's make hunger history, one meal at a time."
+          </div>
+          <div style="font-size:11px;color:var(--slate);margin-top:8px">Use as a starting point — personalise with your own voice. Do not alter the GoFundMe link or stats.</div>
+        </div>
+      </div>
+
+      <!-- ─ Campaign 2: Ghana School Build ─ -->
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <div>
+            <div class="card-title">🏫 Build a School in Rural Ghana</div>
+            <div style="font-size:12px;color:var(--slate)">Pencils of Promise · Kickstarter · Deadline: May 10, 2026</div>
+          </div>
+          <span class="badge badge-blue">Active · 20 days left</span>
+        </div>
+
+        <div class="grid-3" style="margin:14px 0;gap:12px">
+          <div style="background:var(--blue-light);border:1.5px solid var(--blue-mid);border-radius:12px;padding:14px;text-align:center">
+            <div style="font-size:26px;margin-bottom:6px">📋</div>
+            <div style="font-weight:700;font-size:13px;color:var(--navy)">Project Overview PDF</div>
+            <div style="font-size:11.5px;color:var(--slate);margin:4px 0">Full campaign context, school construction plan, and creator guidelines</div>
+            <button class="btn btn-primary btn-sm" style="margin-top:8px;width:100%">⬇ Download PDF</button>
+          </div>
+          <div style="background:var(--green-light);border:1.5px solid var(--green-mid);border-radius:12px;padding:14px;text-align:center">
+            <div style="font-size:26px;margin-bottom:6px">🎬</div>
+            <div style="font-weight:700;font-size:13px;color:var(--navy)">Sample Content Script</div>
+            <div style="font-size:11.5px;color:var(--slate);margin:4px 0">Reel script, YouTube talking points, and caption templates</div>
+            <button class="btn btn-green btn-sm" style="margin-top:8px;width:100%">⬇ Download Script</button>
+          </div>
+          <div style="background:var(--orange-light);border:1.5px solid var(--orange-mid);border-radius:12px;padding:14px;text-align:center">
+            <div style="font-size:26px;margin-bottom:6px">🌍</div>
+            <div style="font-weight:700;font-size:13px;color:var(--navy)">Impact Certificate</div>
+            <div style="font-size:11.5px;color:var(--slate);margin:4px 0">Awarded upon campaign completion — share with your audience</div>
+            <button class="btn btn-outline btn-sm" style="margin-top:8px;width:100%;color:var(--slate)" disabled>🔒 Available on completion</button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Asset</th><th>Type</th><th>Size</th><th>Added</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>📋 <strong>Project Overview & Brief</strong></td>
+                <td><span class="badge badge-orange">PDF</span></td>
+                <td>1.8 MB</td>
+                <td>Apr 20</td>
+                <td><button class="btn btn-primary btn-sm">⬇ Download</button></td>
+              </tr>
+              <tr>
+                <td>🎬 <strong>Sample Script (Reel + YouTube Short)</strong></td>
+                <td><span class="badge badge-orange">PDF</span></td>
+                <td>0.5 MB</td>
+                <td>Apr 20</td>
+                <td><button class="btn btn-primary btn-sm">⬇ Download</button></td>
+              </tr>
+              <tr>
+                <td>🖼️ Pencils of Promise Logo Pack</td>
+                <td><span class="badge badge-blue">ZIP</span></td>
+                <td>3.8 MB</td>
+                <td>Apr 18</td>
+                <td><button class="btn btn-outline btn-sm">⬇ Download</button></td>
+              </tr>
+              <tr>
+                <td>📸 Ghana Community Photos (HiRes)</td>
+                <td><span class="badge badge-blue">ZIP</span></td>
+                <td>22.1 MB</td>
+                <td>Apr 20</td>
+                <td><button class="btn btn-outline btn-sm">⬇ Download</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ PAGE: SUBMIT URL ════════════ -->
+  <div class="page" id="page-post-submit">
+    <div class="page-content">
+      <div class="page-header">
+        <div class="page-title">Submit Post URL</div>
+        <div class="page-subtitle">Share the live URL of your published content for nonprofit review.</div>
+      </div>
+
+      <div class="grid-21">
+        <div>
+          <!-- Campaign selector -->
+          <div class="card" style="margin-bottom:16px">
+            <div class="card-title">Select Campaign</div>
+            <div class="card-sub">Choose the campaign you are submitting for</div>
+            <div class="social-row connected" style="cursor:pointer;margin-bottom:8px">
+              <div class="social-left">
+                <div class="social-icon">🏫</div>
+                <div><div class="social-name">Build a School in Rural Ghana</div><div class="social-handle">Pencils of Promise · Deadline May 10</div></div>
+              </div>
+              <input type="radio" name="camp" checked style="width:16px;height:16px" />
+            </div>
+            <div class="social-row" style="cursor:pointer">
+              <div class="social-left">
+                <div class="social-icon">🤝</div>
+                <div><div class="social-name">Legal Aid for Syrian Refugees</div><div class="social-handle">IRC · Deadline May 20</div></div>
+              </div>
+              <input type="radio" name="camp" style="width:16px;height:16px" />
+            </div>
+          </div>
+
+          <!-- Submissions -->
+          <div class="card">
+            <div class="card-title">Submit Deliverables</div>
+            <div class="card-sub">Build a School in Rural Ghana — 0 / 3 submitted</div>
+
+            <div style="border:1.5px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+                <div style="font-weight:600;font-size:13.5px">📸 Instagram Reel (60–90s)</div>
+                <span class="badge badge-orange">Pending</span>
+              </div>
+              <div class="form-group" style="margin-bottom:10px">
+                <label class="form-label">Reel URL</label>
+                <input class="form-input" placeholder="https://instagram.com/reel/..." />
+              </div>
+              <div class="form-group" style="margin-bottom:10px">
+                <label class="form-label">Caption Used</label>
+                <textarea class="form-input" rows="2" placeholder="Paste the exact caption including hashtags and campaign link..."></textarea>
+              </div>
+              <button class="btn btn-primary btn-sm">Submit Reel →</button>
+            </div>
+
+            <div style="border:1.5px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+                <div style="font-weight:600;font-size:13.5px">▶️ YouTube Short / Story Set</div>
+                <span class="badge badge-orange">Pending</span>
+              </div>
+              <div class="form-group" style="margin-bottom:10px">
+                <label class="form-label">YouTube URL</label>
+                <input class="form-input" placeholder="https://youtube.com/shorts/..." />
+              </div>
+              <div class="form-group" style="margin-bottom:10px">
+                <label class="form-label">Screenshot of Kickstarter link in description</label>
+                <div class="upload-box">
+                  <div class="upload-icon">📷</div>
+                  <div class="upload-text"><strong>Upload screenshot</strong> showing the donation link was included</div>
+                </div>
+              </div>
+              <button class="btn btn-outline btn-sm">Submit YouTube →</button>
+            </div>
+
+            <div style="background:var(--bg);border-radius:10px;padding:12px;text-align:center;color:var(--slate);font-size:13px">
+              +1 more deliverable to submit for this campaign
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="card" style="margin-bottom:16px">
+            <div class="card-title">Submission Progress</div>
+            <div class="card-sub">Build a School in Rural Ghana</div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px"><span>Instagram Reel</span><span class="badge badge-orange">Pending</span></div>
+                <div class="progress-wrap"><div class="progress-bar" style="width:0%;background:var(--blue-mid)"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px"><span>YouTube Short</span><span class="badge badge-orange">Pending</span></div>
+                <div class="progress-wrap"><div class="progress-bar" style="width:0%;background:var(--blue-mid)"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px"><span>Caption + Campaign Link</span><span class="badge badge-orange">Pending</span></div>
+                <div class="progress-wrap"><div class="progress-bar" style="width:0%;background:var(--blue-mid)"></div></div>
+              </div>
+            </div>
+            <div style="margin-top:14px;text-align:center;font-size:12.5px;color:var(--slate)">
+              📅 Deadline: May 10, 2026 (20 days remaining)
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Submission Tips</div>
+            <div style="font-size:13px;line-height:1.8;color:var(--text)">
+              ✅ Include the Kickstarter link in bio or caption<br>
+              ✅ Use approved hashtags from the brief<br>
+              ✅ Tag <strong>@pencilsofpromise</strong> in posts<br>
+              ✅ Do not remove posts within 60 days<br>
+              ⚠️ Avoid personal fundraising links<br>
+              ⚠️ Submit within 24 hrs of going live
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ PAGE: REVIEW ════════════ -->
+  <div class="page" id="page-post-review">
+    <div class="page-content">
+      <div class="page-header">
+        <div class="page-title">Submission Review Status</div>
+        <div class="page-subtitle">Track brand review feedback and approval for each deliverable.</div>
+      </div>
+
+      <div class="grid-4" id="review-kpis" style="margin-bottom:20px">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:var(--blue-light)">📤</div>
+          <div><div class="stat-value" id="rev-total">14</div><div class="stat-label">Total Submitted</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:var(--green-light)">✅</div>
+          <div><div class="stat-value" id="rev-approved">10</div><div class="stat-label">Approved</div><div class="stat-delta up" id="rev-approved-pct">71%</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:var(--orange-light)">⏳</div>
+          <div><div class="stat-value" id="rev-reviewing">3</div><div class="stat-label">Under Review</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:var(--red-light)">🔄</div>
+          <div><div class="stat-value" id="rev-revision">1</div><div class="stat-label">Revision Needed</div><div class="stat-delta down" id="rev-revision-sub">1 action needed</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Submission Log</div>
+        <div class="card-sub">All campaigns · Most recent first</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Campaign</th>
+                <th>Deliverable</th>
+                <th>Submitted</th>
+                <th>Platform</th>
+                <th>Status</th>
+                <th>Feedback</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="review-tbody">
+              <tr>
+                <td>Feed the Future</td>
+                <td>Instagram Reel</td>
+                <td>Apr 15</td>
+                <td>📸 Instagram</td>
+                <td><span class="badge badge-green">Approved</span></td>
+                <td style="font-size:12px;color:var(--slate)">Powerful story ✓</td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td>Feed the Future</td>
+                <td>YouTube Documentary</td>
+                <td>Apr 15</td>
+                <td>▶️ YouTube</td>
+                <td><span class="badge badge-green">Approved</span></td>
+                <td style="font-size:12px;color:var(--slate)">—</td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td>Feed the Future</td>
+                <td>Instagram Story Set</td>
+                <td>Apr 16</td>
+                <td>📸 Instagram</td>
+                <td><span class="badge badge-red">Revision</span></td>
+                <td style="font-size:12px;color:var(--red)">Missing GoFundMe link in swipe-up</td>
+                <td><button class="btn btn-danger btn-sm">Re-submit</button></td>
+              </tr>
+              <tr>
+                <td>Clean Futures Fund</td>
+                <td>YouTube Explainer</td>
+                <td>Apr 12</td>
+                <td>▶️ YouTube</td>
+                <td><span class="badge badge-green">Approved</span></td>
+                <td style="font-size:12px;color:var(--slate)">Excellent coverage ✓</td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td>Clean Futures Fund</td>
+                <td>Blog Post</td>
+                <td>Apr 11</td>
+                <td>🌐 Blog</td>
+                <td><span class="badge badge-orange">Reviewing</span></td>
+                <td style="font-size:12px;color:var(--slate)">In review...</td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td>Refugee Welcome Fund</td>
+                <td>Twitter Thread</td>
+                <td>Apr 10</td>
+                <td>𝕏 Twitter</td>
+                <td><span class="badge badge-green">Approved</span></td>
+                <td style="font-size:12px;color:var(--slate)">—</td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td>Refugee Welcome Fund</td>
+                <td>Instagram Carousel</td>
+                <td>Apr 9</td>
+                <td>📸 Instagram</td>
+                <td><span class="badge badge-orange">Reviewing</span></td>
+                <td style="font-size:12px;color:var(--slate)">Pending org review</td>
+                <td>—</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ PAGE: ANALYTICS ════════════ -->
+  <div class="page" id="page-analytics">
+    <div class="page-content">
+      <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+          <div class="page-title">Campaign Analytics</div>
+          <div class="page-subtitle">Performance data for all projects you have promoted through Socia. Only Socia-linked content is tracked here.</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <select class="form-select" style="width:140px;font-size:12.5px">
+            <option>All Projects</option>
+            <option>Feed the Future</option>
+            <option>Ghana School Build</option>
+            <option>Refugee Welcome Fund</option>
+          </select>
+          <select class="form-select" style="width:120px;font-size:12.5px">
+            <option>Last 90 days</option>
+            <option>Last 30 days</option>
+            <option>All time</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Info banner -->
+      <div style="background:var(--blue-light);border:1px solid var(--blue-mid);border-radius:10px;padding:11px 16px;font-size:12.5px;color:var(--blue);margin-bottom:20px;display:flex;align-items:center;gap:10px">
+        📌 <span>Analytics below are sourced exclusively from content posted through <strong>Socia campaigns</strong>. General account stats are not included.</span>
+      </div>
+
+      <!-- Top KPI row -->
+      <div class="grid-4" id="analytics-kpis" style="margin-bottom:20px">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:var(--blue-light)">👁</div>
+          <div><div class="stat-value" id="an-impressions">2.4M</div><div class="stat-label">Total Impressions</div><div class="stat-delta up">↑ 22% vs last period</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:var(--green-light)">💵</div>
+          <div><div class="stat-value" id="an-funds">$142K</div><div class="stat-label">Funds Raised via Links</div><div class="stat-delta up">Attributed to your content</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:var(--orange-light)">❤️</div>
+          <div><div class="stat-value" id="an-engagements">114K</div><div class="stat-label">Total Engagements</div><div class="stat-delta up">↑ 15%</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#F3E5F5">🔗</div>
+          <div><div class="stat-value" id="an-clicks">8,240</div><div class="stat-label">Donation Link Clicks</div><div class="stat-delta up">↑ 31%</div></div>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-bottom:20px">
+        <!-- Impressions by campaign -->
+        <div class="card">
+          <div class="card-title">Impressions by Campaign</div>
+          <div class="card-sub">Socia-tracked posts only · last 90 days</div>
+          <div class="bar-chart">
+            <div class="bar-wrap">
+              <div class="bar" style="height:58%;background:var(--orange-light);border:1.5px solid var(--orange-mid)"></div>
+              <div class="bar-label">Feed Future</div>
+            </div>
+            <div class="bar-wrap">
+              <div class="bar" style="height:90%;background:var(--blue-mid)"></div>
+              <div class="bar-label">Ghana School</div>
+            </div>
+            <div class="bar-wrap">
+              <div class="bar" style="height:44%;background:var(--blue-light);border:1.5px solid var(--blue-mid)"></div>
+              <div class="bar-label">Refugee Fund</div>
+            </div>
+            <div class="bar-wrap">
+              <div class="bar" style="height:35%;background:var(--green-light);border:1.5px solid var(--green-mid)"></div>
+              <div class="bar-label">Clean Water</div>
+            </div>
+            <div class="bar-wrap">
+              <div class="bar" style="height:52%;background:var(--blue-light);border:1.5px solid var(--blue-mid)"></div>
+              <div class="bar-label">Schools Ethiopia</div>
+            </div>
+            <div class="bar-wrap">
+              <div class="bar" style="height:28%;background:var(--green-light);border:1.5px solid var(--green-mid)"></div>
+              <div class="bar-label">Vaccination</div>
+            </div>
+          </div>
+          <div style="margin-top:8px;font-size:11px;color:var(--slate);text-align:center">Each bar = total post impressions for that Socia campaign</div>
+        </div>
+
+        <!-- Donation clicks vs impressions -->
+        <div class="card">
+          <div class="card-title">Donation Link Clicks by Platform</div>
+          <div class="card-sub">Clicks tracked via Socia-issued campaign links</div>
+          <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-top:8px">
+            <svg viewBox="0 0 120 120" width="110" height="110">
+              <circle cx="60" cy="60" r="48" fill="none" stroke="#E8F5E9" stroke-width="24"/>
+              <circle cx="60" cy="60" r="48" fill="none" stroke="var(--blue-mid)" stroke-width="24"
+                stroke-dasharray="175 301" stroke-linecap="butt" transform="rotate(-90 60 60)"/>
+              <circle cx="60" cy="60" r="48" fill="none" stroke="var(--green-mid)" stroke-width="24"
+                stroke-dasharray="96 301" stroke-dashoffset="-175" stroke-linecap="butt" transform="rotate(-90 60 60)"/>
+              <circle cx="60" cy="60" r="48" fill="none" stroke="var(--orange-mid)" stroke-width="24"
+                stroke-dasharray="30 301" stroke-dashoffset="-271" stroke-linecap="butt" transform="rotate(-90 60 60)"/>
+              <circle cx="60" cy="60" r="16" fill="white"/>
+            </svg>
+            <div>
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:13px"><div style="width:10px;height:10px;border-radius:2px;background:var(--blue-mid)"></div>Instagram 58% · 4,779 clicks</div>
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:13px"><div style="width:10px;height:10px;border-radius:2px;background:var(--green-mid)"></div>YouTube 32% · 2,637 clicks</div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:13px"><div style="width:10px;height:10px;border-radius:2px;background:var(--orange-mid)"></div>X / Twitter 10% · 824 clicks</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Per-campaign performance table -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-title">Per-Campaign Performance</div>
+        <div class="card-sub">Your Socia campaign results — tracked from accepted projects only</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Campaign</th>
+                <th>Org / Platform</th>
+                <th>Impressions</th>
+                <th>Engagements</th>
+                <th>ER%</th>
+                <th>Link Clicks</th>
+                <th>$ Raised (attributed)</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="analytics-tbody">
+              <tr>
+                <td>🏫 Ghana School Build</td>
+                <td>Pencils of Promise · Kickstarter</td>
+                <td>680K</td>
+                <td>40.8K</td>
+                <td><span style="color:var(--green-mid);font-weight:700">6.0%</span></td>
+                <td>2,840</td>
+                <td style="font-weight:700;color:var(--green-mid)">$54,200 ↑</td>
+                <td><span class="badge badge-orange">Active</span></td>
+              </tr>
+              <tr>
+                <td>🍽️ Daily Meals – Nairobi</td>
+                <td>Feed the Future · GoFundMe</td>
+                <td>490K</td>
+                <td>26.5K</td>
+                <td><span style="color:var(--green-mid);font-weight:700">5.4%</span></td>
+                <td>2,180</td>
+                <td style="font-weight:700;color:var(--green-mid)">$88,000 ↑</td>
+                <td><span class="badge badge-orange">Active</span></td>
+              </tr>
+              <tr>
+                <td>🌊 Clean Water Wells – Bangladesh</td>
+                <td>charity: water · Kickstarter</td>
+                <td>312K</td>
+                <td>18.4K</td>
+                <td><span style="font-weight:700">5.9%</span></td>
+                <td>1,440</td>
+                <td style="font-weight:700;color:var(--green-mid)">$38,000</td>
+                <td><span class="badge badge-green">Complete</span></td>
+              </tr>
+              <tr>
+                <td>🤝 Refugee Welcome Fund</td>
+                <td>IRC · Kickstarter</td>
+                <td>284K</td>
+                <td>15.2K</td>
+                <td><span style="font-weight:700">5.4%</span></td>
+                <td>980</td>
+                <td style="font-weight:700;color:var(--green-mid)">$22,500</td>
+                <td><span class="badge badge-green">Complete</span></td>
+              </tr>
+              <tr>
+                <td>🏫 Schools for All – Ethiopia</td>
+                <td>Pencils of Promise · Kickstarter</td>
+                <td>420K</td>
+                <td>24.8K</td>
+                <td><span style="color:var(--green-mid);font-weight:700">5.9%</span></td>
+                <td>800</td>
+                <td style="font-weight:700;color:var(--green-mid)">$41,200</td>
+                <td><span class="badge badge-green">Complete</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Funds raised over time + engagement rate heatmap -->
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Monthly Funds Raised (Attributed)</div>
+          <div class="card-sub">Donation revenue traced to your Socia campaign links</div>
+          <div class="bar-chart">
+            <div class="bar-wrap"><div class="bar" style="height:30%;background:var(--green-light)"></div><div class="bar-label">Oct</div></div>
+            <div class="bar-wrap"><div class="bar" style="height:44%;background:var(--green-light)"></div><div class="bar-label">Nov</div></div>
+            <div class="bar-wrap"><div class="bar" style="height:38%;background:var(--green-light)"></div><div class="bar-label">Dec</div></div>
+            <div class="bar-wrap"><div class="bar" style="height:60%;background:var(--green-mid)"></div><div class="bar-label">Jan</div></div>
+            <div class="bar-wrap"><div class="bar" style="height:75%;background:var(--green-mid)"></div><div class="bar-label">Feb</div></div>
+            <div class="bar-wrap"><div class="bar" style="height:68%;background:var(--green-mid)"></div><div class="bar-label">Mar</div></div>
+            <div class="bar-wrap"><div class="bar" style="height:95%;background:var(--green)"></div><div class="bar-label">Apr</div></div>
+          </div>
+          <div style="text-align:center;margin-top:8px;font-size:13px;font-weight:700;color:var(--green-mid)">Total: $142,000 raised via your Socia links</div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Cause Category Reach</div>
+          <div class="card-sub">Impressions split by social cause type</div>
+          <div style="margin-top:8px">
+            <div style="margin-bottom:10px">
+              <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px"><span>🏫 Education</span><span style="font-weight:700">980K · 41%</span></div>
+              <div class="progress-wrap"><div class="progress-bar" style="width:41%;background:var(--blue-mid)"></div></div>
+            </div>
+            <div style="margin-bottom:10px">
+              <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px"><span>🍽️ Food Relief</span><span style="font-weight:700">490K · 20%</span></div>
+              <div class="progress-wrap"><div class="progress-bar" style="width:20%;background:var(--orange-mid)"></div></div>
+            </div>
+            <div style="margin-bottom:10px">
+              <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px"><span>🌊 Clean Water</span><span style="font-weight:700">312K · 13%</span></div>
+              <div class="progress-wrap"><div class="progress-bar" style="width:13%;background:var(--blue-light);border:1px solid var(--blue-mid)"></div></div>
+            </div>
+            <div style="margin-bottom:10px">
+              <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px"><span>🤝 Refugees</span><span style="font-weight:700">284K · 12%</span></div>
+              <div class="progress-wrap"><div class="progress-bar" style="width:12%;background:var(--green-mid)"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px"><span>🏥 Healthcare + Other</span><span style="font-weight:700">334K · 14%</span></div>
+              <div class="progress-wrap"><div class="progress-bar" style="width:14%;background:#C084FC"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ PAGE: EARNINGS ════════════ -->
+  <div class="page" id="page-earnings">
+    <div class="page-content">
+      <div class="page-header">
+        <div class="page-title">Earnings</div>
+        <div class="page-subtitle">Track your creator stipends, pending payouts, and transaction history across all cause campaigns.</div>
+      </div>
+
+      <div class="grid-4" id="earnings-kpis" style="margin-bottom:20px">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:var(--green-light)">💰</div>
+          <div><div class="stat-value" id="earn-total">$4,820</div><div class="stat-label">Total Earned (2026)</div><div class="stat-delta up">↑ 44% YoY</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:var(--orange-light)">⏳</div>
+          <div><div class="stat-value" id="earn-pending">$950</div><div class="stat-label">Pending Payout</div><div class="stat-delta" id="earn-pending-sub">2 campaigns</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:var(--blue-light)">🏦</div>
+          <div><div class="stat-value" id="earn-settled">$3,870</div><div class="stat-label">Settled to Bank</div><div class="stat-delta up">On time</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#F3E5F5">📈</div>
+          <div><div class="stat-value" id="earn-avg">$402</div><div class="stat-label">Avg per Campaign</div><div class="stat-delta up">↑ $65 vs last yr</div></div>
+        </div>
+      </div>
+
+      <div class="grid-21">
+        <div class="card">
+          <div class="card-title">Transaction History</div>
+          <div class="card-sub">All payment records</div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Campaign</th>
+                  <th>Organisation</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Reference</th>
+                </tr>
+              </thead>
+              <tbody id="earnings-tbody">
+                <tr>
+                  <td>Apr 19</td>
+                  <td>Feed the Future</td>
+                  <td>GoFundMe Campaign</td>
+                  <td><strong>$500</strong></td>
+                  <td><span class="badge badge-orange">Pending</span></td>
+                  <td style="font-size:11.5px;color:var(--slate)">TXN-2026-0419</td>
+                </tr>
+                <tr>
+                  <td>Apr 12</td>
+                  <td>Schools for All</td>
+                  <td>Pencils of Promise</td>
+                  <td><strong>$450</strong></td>
+                  <td><span class="badge badge-green">Paid</span></td>
+                  <td style="font-size:11.5px;color:var(--slate)">TXN-2026-0412</td>
+                </tr>
+                <tr>
+                  <td>Mar 28</td>
+                  <td>Refugee Welcome Fund</td>
+                  <td>IRC · Kickstarter</td>
+                  <td><strong>$600</strong></td>
+                  <td><span class="badge badge-green">Paid</span></td>
+                  <td style="font-size:11.5px;color:var(--slate)">TXN-2026-0328</td>
+                </tr>
+                <tr>
+                  <td>Mar 15</td>
+                  <td>Clean Futures Fund</td>
+                  <td>charity: water</td>
+                  <td><strong>$380</strong></td>
+                  <td><span class="badge badge-green">Paid</span></td>
+                  <td style="font-size:11.5px;color:var(--slate)">TXN-2026-0315</td>
+                </tr>
+                <tr>
+                  <td>Feb 20</td>
+                  <td>Children's Nutrition Drive</td>
+                  <td>UNICEF Indiegogo</td>
+                  <td><strong>$350</strong></td>
+                  <td><span class="badge badge-green">Paid</span></td>
+                  <td style="font-size:11.5px;color:var(--slate)">TXN-2026-0220</td>
+                </tr>
+                <tr>
+                  <td>Jan 30</td>
+                  <td>Literacy First</td>
+                  <td>Room to Read</td>
+                  <td><strong>$420</strong></td>
+                  <td><span class="badge badge-green">Paid</span></td>
+                  <td style="font-size:11.5px;color:var(--slate)">TXN-2026-0130</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div>
+          <div class="card" style="margin-bottom:16px">
+            <div class="card-title">Monthly Earnings</div>
+            <div class="card-sub">Apr 2025 – Apr 2026</div>
+            <div class="bar-chart">
+              <div class="bar-wrap"><div class="bar" style="height:40%;background:var(--green-light)"></div><div class="bar-label">May</div></div>
+              <div class="bar-wrap"><div class="bar" style="height:55%;background:var(--green-light)"></div><div class="bar-label">Jun</div></div>
+              <div class="bar-wrap"><div class="bar" style="height:35%;background:var(--green-light)"></div><div class="bar-label">Jul</div></div>
+              <div class="bar-wrap"><div class="bar" style="height:60%;background:var(--green-mid)"></div><div class="bar-label">Aug</div></div>
+              <div class="bar-wrap"><div class="bar" style="height:75%;background:var(--green-mid)"></div><div class="bar-label">Sep</div></div>
+              <div class="bar-wrap"><div class="bar" style="height:68%;background:var(--green-mid)"></div><div class="bar-label">Oct</div></div>
+              <div class="bar-wrap"><div class="bar" style="height:90%;background:var(--green)"></div><div class="bar-label">Apr</div></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Payout Schedule</div>
+            <div class="card-sub">Upcoming settlements</div>
+            <div class="timeline" id="earnings-payout-timeline">
+              <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="timeline-title">Feed the Future · $500</div>
+                <div class="timeline-meta">Expected May 5 after content approval</div>
+              </div>
+              <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="timeline-title">Ghana School Build · $350</div>
+                <div class="timeline-meta">Expected May 18 post submission</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+</div><!-- /main -->
+
+<script>
+// SNS multi-account manager
+const platformMeta = {
+  instagram: { icon:'📸', name:'Instagram' },
+  youtube:   { icon:'▶️', name:'YouTube' },
+  twitter:   { icon:'𝕏',  name:'X (Twitter)' },
+  tiktok:    { icon:'🎵', name:'TikTok' },
+  facebook:  { icon:'📘', name:'Facebook' },
+  linkedin:  { icon:'💼', name:'LinkedIn' },
+  threads:   { icon:'🧵', name:'Threads' },
+  blog:      { icon:'🌐', name:'Personal Blog / Website' },
+};
+
+function addSNSAccount() {
+  const sel = document.getElementById('sns-platform-select');
+  const handle = document.getElementById('sns-handle-input').value.trim();
+  if (!handle) { alert('Please enter a username or URL.'); return; }
+  const platform = sel.value;
+  const meta = platformMeta[platform];
+  const list = document.getElementById('sns-account-list');
+
+  // Count existing accounts for this platform to show "2nd account" badge
+  const existing = list.querySelectorAll(`[data-platform="${platform}"]`).length;
+  const extraBadge = existing > 0
+    ? `<span style="font-size:10px;background:var(--blue-light);color:var(--blue);border-radius:4px;padding:1px 5px;margin-left:4px">${existing+1}${existing===1?'nd':existing===2?'rd':'th'} account</span>`
+    : '';
+
+  const row = document.createElement('div');
+  row.setAttribute('data-platform', platform);
+  row.className = 'social-row connected';
+  row.style.marginBottom = '8px';
+  row.innerHTML = `
+    <div class="social-left">
+      <div class="social-icon">${meta.icon}</div>
+      <div>
+        <div class="social-name">${meta.name}${extraBadge}</div>
+        <div class="social-handle">${handle} · just added</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span class="badge badge-green">Connected ✓</span>
+      <button class="btn btn-danger btn-sm" onclick="removeSNS(this)">✕</button>
+    </div>`;
+  list.appendChild(row);
+  document.getElementById('sns-handle-input').value = '';
+}
+
+function removeSNS(btn) {
+  btn.closest('.social-row').remove();
+}
+
+const pageMap = {
+  'reg-overview':   { bread:'Registration / Overview' },
+  'reg-profile':    { bread:'Registration / New Registration' },
+  'reg-sns':        { bread:'Registration / Link SNS Accounts' },
+  'reg-kyc':        { bread:'Registration / Identity (KYC)' },
+  'reg-tax':        { bread:'Registration / Payment Setup' },
+  'proj-active':    { bread:'Projects / My Active Projects' },
+  'proj-search':    { bread:'Projects / Search & Filter' },
+  'proj-apply':     { bread:'Projects / Apply for Campaign' },
+  'proj-accept':    { bread:'Projects / Accept / Decline Offers' },
+  'post-materials': { bread:'Post & Creative / Materials & Assets' },
+  'post-submit':    { bread:'Post & Creative / Submit Post URL' },
+  'post-review':    { bread:'Post & Creative / Submission Review' },
+  'analytics':      { bread:'Analytics / Campaign Analytics' },
+  'earnings':       { bread:'Analytics / Earnings' },
+};
+
+function showPage(id) {
+  // Hide all pages
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+
+  // Update breadcrumb
+  const meta = pageMap[id];
+  if (meta) {
+    const parts = meta.bread.split(' / ');
+    document.getElementById('breadcrumb').innerHTML =
+      parts.slice(0,-1).join(' / ') + (parts.length > 1 ? ' / ' : '') +
+      '<span>' + parts[parts.length-1] + '</span>';
+  }
+
+  // Update nav active state
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const navMap = {
+    'reg-overview': 0, 'reg-profile': 0, 'reg-sns': 0, 'reg-kyc': 0, 'reg-tax': 0,
+    'proj-active': 1,
+    'proj-search': 2, 'proj-apply': 2,
+    'proj-accept': 3,
+    'post-materials': 4,
+    'post-submit': 5,
+    'post-review': 6,
+    'analytics': 7,
+    'earnings': 8,
+  };
+  const navItems = document.querySelectorAll('.nav-item');
+  if (navMap[id] !== undefined && navItems[navMap[id]]) {
+    navItems[navMap[id]].classList.add('active');
+  }
+
+  window.scrollTo(0,0);
+}
+
+// Tab buttons
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    btn.closest('.tab-row').querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+
+// Platform pills toggle
+document.querySelectorAll('.platform-pill').forEach(pill => {
+  pill.addEventListener('click', () => pill.classList.toggle('active'));
+});
+
+// Sidebar step clicks
+document.querySelectorAll('.sidebar-step').forEach(step => {
+  step.addEventListener('click', function() {
+    document.querySelectorAll('.sidebar-step').forEach(s => s.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+</script>
+
+<!-- ══════════ DYNAMIC DATA LOADER ══════════ -->
+<script>
+const API = '';           // same origin — Express serves both
+const USER_ID = 1;        // current logged-in user
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function fmt$( n ) {
+  if (n == null) return '—';
+  if (n >= 1e6) return '$' + (n/1e6).toFixed(1) + 'M';
+  if (n >= 1e3) return '$' + (n/1e3).toFixed(0) + 'K';
+  return '$' + Number(n).toLocaleString();
+}
+function fmtNum( n ) {
+  if (n == null) return '—';
+  if (n >= 1e6) return (n/1e6).toFixed(1) + 'M';
+  if (n >= 1e3) return (n/1e3).toFixed(0) + 'K';
+  return Number(n).toLocaleString();
+}
+function fmtDate(d) {
+  if (!d) return '—';
+  const dt = new Date(d);
+  return dt.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+}
+function daysUntil(d) {
+  if (!d) return null;
+  const diff = Math.ceil((new Date(d) - Date.now()) / 86400000);
+  return diff;
+}
+function badgeClass(status) {
+  return { approved:'badge-green', revision:'badge-red', reviewing:'badge-orange',
+           pending:'badge-orange', active:'badge-orange', completed:'badge-green',
+           paid:'badge-green' }[status] || 'badge-gray';
+}
+function deliverableIcon(type) {
+  const t = (type||'').toLowerCase();
+  if (t.includes('instagram') || t.includes('reel') || t.includes('story')) return '📸';
+  if (t.includes('youtube') || t.includes('video')) return '▶️';
+  if (t.includes('twitter') || t.includes('thread')) return '𝕏';
+  if (t.includes('tiktok')) return '🎵';
+  if (t.includes('caption') || t.includes('blog') || t.includes('text')) return '📝';
+  return '📱';
+}
+function platformIcon(p) {
+  return { instagram:'📸', youtube:'▶️', twitter:'𝕏', tiktok:'🎵',
+           facebook:'📘', linkedin:'💼', threads:'🧵', blog:'🌐' }[p] || '🔗';
+}
+
+// ── User profile ──────────────────────────────────────────────────────────────
+async function loadUser() {
+  try {
+    const user = await fetch(`${API}/api/users/${USER_ID}`).then(r => r.json());
+    if (user.error) return;
+    const av = user.avatar_initials || user.name.split(' ').map(w=>w[0]).join('').slice(0,2);
+    document.getElementById('sidebar-avatar').textContent = av;
+    document.getElementById('topbar-avatar').textContent = av;
+    document.getElementById('sidebar-name').textContent = user.name;
+    document.getElementById('sidebar-handle').textContent = user.handle;
+  } catch(e) { /* server not running — fall back to static HTML */ }
+}
+
+// ── Active projects ───────────────────────────────────────────────────────────
+async function loadActiveProjects() {
+  try {
+    const projects = await fetch(`${API}/api/users/${USER_ID}/projects/active`).then(r => r.json());
+    if (!Array.isArray(projects) || !projects.length) return;
+
+    // Stats
+    const totalStipends = projects.reduce((s,p) => s + Number(p.stipend_amount||0), 0);
+    const allDel = projects.flatMap(p => p.deliverables||[]);
+    const submitted = allDel.filter(d => d.status !== 'pending').length;
+    const pending   = allDel.filter(d => d.status === 'pending').length;
+    const soonest   = projects.reduce((a,b) => (!a || new Date(b.deadline) < new Date(a.deadline)) ? b : a, null);
+    const daysLeft  = soonest ? daysUntil(soonest.deadline) : null;
+
+    document.getElementById('stat-active-count').textContent = projects.length;
+    document.getElementById('stat-stipends').textContent = fmt$(totalStipends);
+    document.getElementById('stat-deliverables').textContent = `${submitted}/${allDel.length}`;
+    document.getElementById('stat-deliverables-sub').textContent = `${pending} pending`;
+    if (daysLeft !== null) {
+      document.getElementById('stat-deadline').textContent = daysLeft <= 0 ? 'Today' : daysLeft + 'd';
+      document.getElementById('stat-deadline-sub').textContent = soonest.organization;
+    }
+
+    // Project cards
+    const colors = [
+      'linear-gradient(135deg,#E65100,#FB8C00)',
+      'linear-gradient(135deg,#1565C0,#43A047)',
+      'linear-gradient(135deg,#1A237E,#1E88E5)',
+      'linear-gradient(135deg,#2E7D32,#A5D6A7)',
+    ];
+    const borderColors = ['var(--orange-mid)','var(--blue-mid)','var(--blue)','var(--green-mid)'];
+
+    const html = projects.map((proj, i) => {
+      const pct = proj.goal_amount ? Math.round(proj.raised_amount / proj.goal_amount * 100) : 0;
+      const days = daysUntil(proj.deadline);
+      const deadlineBadge = days !== null
+        ? `<span class="badge ${days <= 3 ? 'badge-orange' : 'badge-blue'}">📅 Closes ${fmtDate(proj.deadline)}${days > 0 ? ' — '+days+' days' : ' — today'}</span>`
+        : '';
+      const color = colors[i % colors.length];
+      const border = borderColors[i % borderColors.length];
+
+      const revision = (proj.deliverables||[]).find(d => d.status === 'revision');
+      const revisionAlert = revision
+        ? `<div style="margin-top:10px;background:var(--red-light);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--red)">
+             ⚠️ ${revision.content_type} needs resubmission — ${revision.feedback||'see feedback'}.
+             <span style="text-decoration:underline;cursor:pointer" onclick="showPage('post-review')">Fix now →</span>
+           </div>` : '';
+
+      const deliverableCards = (proj.deliverables||[]).map(d => {
+        const bc = { approved:'1.5px solid var(--green-mid)', revision:'1.5px solid var(--orange-mid)',
+                     pending:'1.5px solid var(--border)', reviewing:'1.5px solid var(--blue-mid)',
+                     submitted:'1.5px solid var(--blue-mid)' }[d.status] || '1.5px solid var(--border)';
+        const badge = d.status === 'approved'
+          ? `<span class="badge badge-green" style="font-size:10px">Approved ✓</span>`
+          : d.status === 'revision'
+          ? `<span class="badge badge-red" style="font-size:10px">Revision ⚠️</span>`
+          : d.status === 'reviewing'
+          ? `<span class="badge badge-blue" style="font-size:10px">Reviewing</span>`
+          : `<span class="badge badge-orange" style="font-size:10px">Pending</span>`;
+        return `<div style="background:#fff;border-radius:9px;padding:10px;border:${bc};text-align:center">
+          <div style="font-size:18px">${d.icon || deliverableIcon(d.content_type)}</div>
+          <div style="font-size:12px;font-weight:700;margin-top:4px">${d.content_type}</div>
+          <div style="margin-top:4px">${badge}</div>
+        </div>`;
+      }).join('');
+
+      return `
+      <div class="card" style="margin-bottom:20px;border-left:4px solid ${border}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:14px;margin-bottom:16px">
+          <div style="display:flex;gap:14px;align-items:flex-start;flex:1">
+            <div style="width:54px;height:54px;border-radius:12px;background:${color};display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0">${proj.emoji||'🌍'}</div>
+            <div>
+              <div style="font-weight:800;font-size:16px;color:var(--navy)">${proj.title}</div>
+              <div style="font-size:12.5px;color:var(--slate);margin-top:2px">${proj.organization} · ${proj.platform} · ${proj.category}</div>
+              <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap">
+                ${deadlineBadge}
+                <span style="background:var(--green-light);color:var(--green);padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:700">Raise ${fmt$(proj.goal_amount)} → Get ${fmt$(proj.stipend_amount)}</span>
+              </div>
+            </div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:11px;color:var(--slate)">Your stipend</div>
+            <div style="font-size:22px;font-weight:800;font-family:'Plus Jakarta Sans',sans-serif;color:var(--green-mid)">${fmt$(proj.stipend_amount)}</div>
+            <div style="font-size:11px;color:var(--slate)">+ ${fmt$(proj.bonus_stipend)} goal-met bonus</div>
+          </div>
+        </div>
+        <div style="margin-bottom:14px">
+          <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px">
+            <span style="font-weight:700;color:var(--navy)">${fmt$(proj.raised_amount)} raised</span>
+            <span style="color:var(--slate)">${fmt$(proj.goal_amount)} goal · ${pct}%</span>
+          </div>
+          <div class="progress-wrap"><div class="progress-bar" style="width:${pct}%;background:${border}"></div></div>
+        </div>
+        <div style="background:var(--bg);border-radius:10px;padding:14px;margin-bottom:14px">
+          <div style="font-weight:700;font-size:12.5px;color:var(--navy);margin-bottom:10px;text-transform:uppercase;letter-spacing:.4px">Deliverable Tracker</div>
+          <div style="display:grid;grid-template-columns:repeat(${Math.max(3,proj.deliverables.length)},1fr);gap:10px">${deliverableCards}</div>
+          ${revisionAlert}
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-primary btn-sm" onclick="showPage('post-materials')">📦 Campaign Assets</button>
+          <button class="btn btn-outline btn-sm" onclick="showPage('post-submit')">🔗 Submit URL</button>
+          <button class="btn btn-outline btn-sm" onclick="showPage('post-review')">🔎 Review Status</button>
+        </div>
+      </div>`;
+    }).join('');
+
+    document.getElementById('active-projects-container').innerHTML = html;
+  } catch(e) { /* keep static */ }
+}
+
+// ── Completed projects ────────────────────────────────────────────────────────
+async function loadCompletedProjects() {
+  try {
+    const rows = await fetch(`${API}/api/users/${USER_ID}/projects/completed`).then(r => r.json());
+    if (!Array.isArray(rows) || !rows.length) return;
+
+    document.getElementById('completed-projects-title').textContent = `✅ Completed Projects (${rows.length})`;
+    document.getElementById('completed-tbody').innerHTML = rows.map(p => `
+      <tr>
+        <td>${p.emoji||'🌍'} ${p.title}</td>
+        <td>${p.organization}</td>
+        <td>${p.platform}</td>
+        <td>${fmtDate(p.completed_at)}</td>
+        <td style="font-weight:700;color:var(--green-mid)">${p.amount ? fmt$(p.amount) : '—'}</td>
+        <td><span class="badge ${p.payment_status === 'paid' ? 'badge-green' : 'badge-orange'}">${p.payment_status === 'paid' ? 'Paid ✓' : 'Pending'}</span></td>
+      </tr>`).join('');
+  } catch(e) {}
+}
+
+// ── Project search grid ───────────────────────────────────────────────────────
+async function loadProjectSearch() {
+  try {
+    const projects = await fetch(`${API}/api/projects?user_id=${USER_ID}`).then(r => r.json());
+    if (!Array.isArray(projects) || !projects.length) return;
+
+    const gradients = [
+      'linear-gradient(135deg,#1565C0,#43A047)',
+      'linear-gradient(135deg,#E65100,#FB8C00)',
+      'linear-gradient(135deg,#1A237E,#1E88E5)',
+      'linear-gradient(135deg,#2E7D32,#A5D6A7)',
+      'linear-gradient(135deg,#37474F,#78909C)',
+      'linear-gradient(135deg,#004D40,#26A69A)',
+    ];
+
+    document.getElementById('project-search-grid').innerHTML = projects.map((p, i) => {
+      const pct = p.goal_amount ? Math.round(p.raised_amount / p.goal_amount * 100) : 0;
+      const statusBadge = p.is_invited
+        ? `<span class="badge badge-blue">Invited</span>`
+        : p.status === 'open'
+        ? (daysUntil(p.deadline) <= 7 ? `<span class="badge badge-orange">Closing Soon</span>` : `<span class="badge badge-green">Open</span>`)
+        : `<span class="badge badge-gray">Coming Soon</span>`;
+      return `
+        <div class="proj-card" onclick="showPage('proj-apply')">
+          <div class="proj-card-img" style="background:${gradients[i%gradients.length]}">${p.emoji||'🌍'}</div>
+          <div class="proj-card-body">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start">
+              <div class="proj-card-title">${p.title}</div>
+              ${statusBadge}
+            </div>
+            <div class="proj-card-brand">${p.organization} · ${p.platform} · ${p.category}</div>
+            <div class="progress-wrap"><div class="progress-bar" style="width:${pct}%;background:var(--blue-mid)"></div></div>
+            <div style="font-size:11px;color:var(--slate);margin-top:4px">${fmt$(p.raised_amount)} raised of ${fmt$(p.goal_amount)} goal</div>
+            <div class="proj-card-footer">
+              <div><div style="font-size:11px;color:var(--slate)">Raise → Earn</div>
+                <div style="font-weight:700;color:var(--green-mid);font-size:12.5px">Raise ${fmt$(p.goal_amount)} → Get ${fmt$(p.stipend_amount)}</div></div>
+              <div><div style="font-size:11px;color:var(--slate)">Deadline</div>
+                <div style="font-weight:600;font-size:12px">${fmtDate(p.deadline)}</div></div>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  } catch(e) {}
+}
+
+// ── Earnings ──────────────────────────────────────────────────────────────────
+async function loadEarnings() {
+  try {
+    const data = await fetch(`${API}/api/earnings?user_id=${USER_ID}`).then(r => r.json());
+    if (data.error) return;
+
+    const s = data.summary || {};
+    document.getElementById('earn-total').textContent = fmt$(s.total_earned);
+    document.getElementById('earn-pending').textContent = fmt$(s.pending_payout);
+    document.getElementById('earn-settled').textContent = fmt$(s.settled_to_bank);
+    const avg = s.campaign_count > 0 ? (s.total_earned / s.campaign_count) : 0;
+    document.getElementById('earn-avg').textContent = fmt$(Math.round(avg));
+
+    const pendingCount = (data.transactions||[]).filter(t => t.status === 'pending').length;
+    document.getElementById('earn-pending-sub').textContent = `${pendingCount} campaign${pendingCount !== 1 ? 's' : ''}`;
+
+    if (data.transactions && data.transactions.length) {
+      document.getElementById('earnings-tbody').innerHTML = data.transactions.map(t => `
+        <tr>
+          <td>${fmtDate(t.transaction_date)}</td>
+          <td>${t.project_title}</td>
+          <td>${t.organization}</td>
+          <td><strong>${fmt$(t.amount)}</strong></td>
+          <td><span class="badge ${badgeClass(t.status)}">${t.status === 'paid' ? 'Paid' : 'Pending'}</span></td>
+          <td style="font-size:11.5px;color:var(--slate)">${t.reference||'—'}</td>
+        </tr>`).join('');
+    }
+
+    if (data.pending_payouts && data.pending_payouts.length) {
+      document.getElementById('earnings-payout-timeline').innerHTML = data.pending_payouts.map(t => `
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-title">${t.project_title} · ${fmt$(t.amount)}</div>
+          <div class="timeline-meta">Expected ${fmtDate(t.expected_date)} after content approval</div>
+        </div>`).join('');
+    }
+  } catch(e) {}
+}
+
+// ── Analytics ─────────────────────────────────────────────────────────────────
+async function loadAnalytics() {
+  try {
+    const data = await fetch(`${API}/api/analytics?user_id=${USER_ID}`).then(r => r.json());
+    if (data.error) return;
+
+    const s = data.summary || {};
+    document.getElementById('an-impressions').textContent = fmtNum(s.total_impressions);
+    document.getElementById('an-funds').textContent = fmt$(s.total_funds_raised);
+    document.getElementById('an-engagements').textContent = fmtNum(s.total_engagements);
+    document.getElementById('an-clicks').textContent = fmtNum(s.total_link_clicks);
+
+    if (data.campaigns && data.campaigns.length) {
+      document.getElementById('analytics-tbody').innerHTML = data.campaigns.map(c => {
+        const isActive = c.project_status === 'active' || c.project_status === 'open';
+        return `<tr>
+          <td>${c.emoji||'🌍'} ${c.project_title}</td>
+          <td>${c.organization} · ${c.platform}</td>
+          <td>${fmtNum(c.impressions)}</td>
+          <td>${fmtNum(c.engagements)}</td>
+          <td><span style="color:var(--green-mid);font-weight:700">${Number(c.engagement_rate).toFixed(1)}%</span></td>
+          <td>${fmtNum(c.link_clicks)}</td>
+          <td style="font-weight:700;color:var(--green-mid)">${fmt$(c.funds_raised)}</td>
+          <td><span class="badge ${isActive ? 'badge-orange' : 'badge-green'}">${isActive ? 'Active' : 'Complete'}</span></td>
+        </tr>`;
+      }).join('');
+    }
+  } catch(e) {}
+}
+
+// ── Submission review ─────────────────────────────────────────────────────────
+async function loadSubmissions() {
+  try {
+    const data = await fetch(`${API}/api/submissions?user_id=${USER_ID}`).then(r => r.json());
+    if (data.error) return;
+
+    const st = data.stats || {};
+    document.getElementById('rev-total').textContent = st.total || 0;
+    document.getElementById('rev-approved').textContent = st.approved || 0;
+    document.getElementById('rev-approved-pct').textContent = st.total > 0 ? Math.round(st.approved/st.total*100)+'%' : '0%';
+    document.getElementById('rev-reviewing').textContent = st.reviewing || 0;
+    document.getElementById('rev-revision').textContent = st.revision || 0;
+    document.getElementById('rev-revision-sub').textContent = `${st.revision || 0} action${st.revision !== 1 ? 's' : ''} needed`;
+
+    if (data.submissions && data.submissions.length) {
+      const statusLabel = { approved:'Approved', revision:'Revision', reviewing:'Reviewing', pending:'Pending', submitted:'Reviewing' };
+      document.getElementById('review-tbody').innerHTML = data.submissions.map(d => `
+        <tr>
+          <td>${d.project_title}</td>
+          <td>${d.content_type}</td>
+          <td>${fmtDate(d.submitted_at)}</td>
+          <td>${deliverableIcon(d.platform)} ${d.platform||'—'}</td>
+          <td><span class="badge ${badgeClass(d.status)}">${statusLabel[d.status]||d.status}</span></td>
+          <td style="font-size:12px;color:${d.status==='revision'?'var(--red)':'var(--slate)'}">${d.feedback||'—'}</td>
+          <td>${d.status==='revision' ? '<button class="btn btn-danger btn-sm">Re-submit</button>' : '—'}</td>
+        </tr>`).join('');
+    }
+  } catch(e) {}
+}
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+(async function init() {
+  await loadUser();
+  await Promise.all([
+    loadActiveProjects(),
+    loadCompletedProjects(),
+    loadProjectSearch(),
+    loadEarnings(),
+    loadAnalytics(),
+    loadSubmissions(),
+  ]);
+})();
+</script>
+
+</body>
+</html>
