@@ -12,7 +12,8 @@ async function run() {
     database: process.env.DB_NAME,
   });
 
-  const sql = fs.readFileSync(path.join(__dirname, 'migrations/002_npos_influencers.sql'), 'utf8');
+  const migrationName = process.argv[2] || '002_npos_influencers.sql';
+  const sql = fs.readFileSync(path.join(__dirname, 'migrations', migrationName), 'utf8');
 
   // Split on semicolons, strip leading comment/blank lines from each chunk,
   // then filter out anything that becomes empty or is a pure SET statement

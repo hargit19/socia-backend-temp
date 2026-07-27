@@ -1,8 +1,14 @@
 const router = require('express').Router();
+const crypto = require('crypto');
 const db = require('../db');
 const mock = require('../data/mockData');
+const notify = require('../lib/notify');
 
 const isDbError = e => ['ETIMEDOUT','ECONNREFUSED','ENOTFOUND','ER_ACCESS_DENIED_ERROR'].includes(e.code) || e.fatal;
+
+const slugify = (s) => String(s || '').toLowerCase().trim()
+  .replace(/[^a-z0-9]+/g, '-')
+  .replace(/^-+|-+$/g, '');
 
 // GET /api/projects
 router.get('/', async (req, res) => {
@@ -63,16 +69,27 @@ router.post('/', async (req, res) => {
     const PLATFORMS = ['GoFundMe','Kickstarter','Indiegogo','Other'];
     const platform     = PLATFORMS.includes(b.platform) ? b.platform : 'Other';
     const npo_id       = b.npo_id || null;
+    const external_url = b.external_url || b.url || '';
 
     if (!title) return res.status(400).json({ error: 'Project name is required' });
 
     const [result] = await db.query(
       `INSERT INTO projects
-        (npo_id, title, organization, category, platform, goal, goal_amount, stipend_amount, deadline, description, status)
-       VALUES (?,?,?,?,?,?,?,0,?,?,'pending')`,
-      [npo_id, title, organization, category, platform, goal_text, goal_amount, deadline, description]
+        (npo_id, title, organization, category, platform, external_url, goal, goal_amount, stipend_amount, deadline, description, status)
+       VALUES (?,?,?,?,?,?,?,?,0,?,?,'pending')`,
+      [npo_id, title, organization, category, platform, external_url || null, goal_text, goal_amount, deadline, description]
     );
     res.status(201).json({ id: result.insertId, status: 'pending' });
+
+    try {
+      if (npo_id) {
+        const [[npo]] = await db.query('SELECT email, admin_name FROM npos WHERE id = ?', [npo_id]);
+        if (npo?.email) await notify.sendNPOProjectSubmitted(npo.email, npo.admin_name || organization, title);
+      }
+      await notify.notifyAdmins('project', title, `Organization: ${organization}`);
+    } catch (notifyErr) {
+      console.error('[projects] Failed to send project-submission notifications:', notifyErr.message);
+    }
   } catch (e) {
     if (isDbError(e)) return res.status(201).json({ id: Date.now(), status: 'pending', _mock: true });
     res.status(500).json({ error: e.message });
@@ -90,16 +107,40 @@ router.post('/:id/submit', async (req, res) => {
   }
 });
 
-// POST /api/projects/:id/enroll — influencer enrolls in an approved project
+// POST /api/projects/:id/enroll — influencer enrolls in an approved project.
+// Generates a shareable referral link slugged from the project name, influencer name, and platform.
 router.post('/:id/enroll', async (req, res) => {
   try {
     const influencer_id = req.body.influencer_id || req.body.user_id;
+    const project_id = req.params.id;
     if (!influencer_id) return res.status(400).json({ error: 'influencer_id required' });
-    await db.query(
-      "INSERT IGNORE INTO influencer_projects (influencer_id, project_id, status) VALUES (?, ?, 'enrolled')",
-      [influencer_id, req.params.id]
+
+    const [[existing]] = await db.query(
+      'SELECT referral_slug FROM influencer_projects WHERE influencer_id = ? AND project_id = ?',
+      [influencer_id, project_id]
     );
-    res.json({ success: true });
+    if (existing) return res.json({ success: true, referral_slug: existing.referral_slug });
+
+    const [[project]] = await db.query('SELECT title, platform, organization FROM projects WHERE id = ?', [project_id]);
+    const [[influencer]] = await db.query('SELECT full_name, email FROM influencers WHERE id = ?', [influencer_id]);
+    if (!project || !influencer) return res.status(404).json({ error: 'Project or influencer not found' });
+
+    const base = [project.title, influencer.full_name, project.platform].map(slugify).filter(Boolean).join('-');
+    const referral_slug = `${base}-${crypto.randomBytes(3).toString('hex')}`;
+
+    await db.query(
+      "INSERT INTO influencer_projects (influencer_id, project_id, status, referral_slug) VALUES (?, ?, 'enrolled', ?)",
+      [influencer_id, project_id, referral_slug]
+    );
+    res.json({ success: true, referral_slug });
+
+    try {
+      if (influencer.email) {
+        await notify.sendInfluencerEnrolled(influencer.email, influencer.full_name, project.title, project.organization);
+      }
+    } catch (notifyErr) {
+      console.error('[projects] Failed to send enrollment notification:', notifyErr.message);
+    }
   } catch (e) {
     if (isDbError(e)) return res.json({ success: true, _mock: true });
     res.status(500).json({ error: e.message });

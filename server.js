@@ -12,6 +12,7 @@ app.use(express.static(path.join(__dirname)));
 
 // API routes
 app.use('/api/users', require('./routes/users'));
+app.use('/api/auth', require('./routes/auth'));
 app.use('/api/projects', require('./routes/projects'));
 app.use('/api/npos', require('./routes/npos'));
 app.use('/api/influencers', require('./routes/influencers'));
@@ -20,6 +21,7 @@ app.use('/api/offers', require('./routes/offers'));
 app.use('/api/analytics', require('./routes/analytics'));
 app.use('/api/earnings', require('./routes/earnings'));
 app.use('/api/submissions', require('./routes/submissions'));
+app.use('/api/go', require('./routes/go'));
 
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));

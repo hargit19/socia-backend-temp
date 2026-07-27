@@ -20,7 +20,7 @@ router.post('/', async (req, res) => {
     const id_number      = b.id_number      || b.idNumber      || '';
     const bank_name      = b.bank_name      || b.bankName      || '';
     const bank_account   = b.bank_account   || b.accountNumber || '';
-    const bank_routing   = b.bank_routing   || b.routingNumber || '';
+    const bank_branch    = b.bank_branch    || b.bankBranch    || '';
     const bank_account_name = b.bank_account_name || b.accountHolder || '';
     const tax_country    = b.tax_country    || b.taxCountry    || '';
     const tax_id         = b.tax_id         || b.taxId         || '';
@@ -33,12 +33,12 @@ router.post('/', async (req, res) => {
     const [result] = await db.query(
       `INSERT INTO influencers
         (full_name, email, phone, country, bio, causes, sns_accounts,
-         id_type, id_number, bank_name, bank_account, bank_routing, bank_account_name,
+         id_type, id_number, bank_name, bank_account, bank_branch, bank_account_name,
          tax_country, tax_id, tax_form, status)
        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'pending')`,
       [full_name, email, phone, country, bio,
        JSON.stringify(causes), JSON.stringify(sns_accounts),
-       id_type, id_number, bank_name, bank_account, bank_routing, bank_account_name,
+       id_type, id_number, bank_name, bank_account, bank_branch, bank_account_name,
        tax_country, tax_id, tax_form]
     );
     res.status(201).json({ id: result.insertId, status: 'pending' });
@@ -50,13 +50,35 @@ router.post('/', async (req, res) => {
   }
 });
 
+// PUT /api/influencers/:id — save the remaining onboarding fields after account creation.
+router.put('/:id', async (req, res) => {
+  try {
+    const b = req.body;
+    const full_name = b.full_name || b.fullName || '';
+    const email = b.email || '';
+    if (!full_name || !email) return res.status(400).json({ error: 'Full name and email are required' });
+    await db.query(
+      `UPDATE influencers SET full_name=?, email=?, phone=?, country=?, bio=?, causes=?, sns_accounts=?,
+       id_type=?, id_number=?, bank_name=?, bank_account=?, bank_branch=?, bank_account_name=? WHERE id=?`,
+      [full_name, email, b.phone || '', b.country || '', b.bio || '', JSON.stringify(b.causes || []), JSON.stringify(b.sns_accounts || b.snsAccounts || []),
+       b.id_type || b.idType || '', b.id_number || b.idNumber || '', b.bank_name || b.bankName || '',
+       b.bank_account || b.accountNumber || '', b.bank_branch || b.bankBranch || '',
+       b.bank_account_name || b.accountHolder || '', req.params.id]
+    );
+    res.json({ id: Number(req.params.id), status: 'pending' });
+  } catch (e) {
+    if (isDbError(e)) return res.json({ id: Number(req.params.id), status: 'pending', _mock: true });
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // GET /api/influencers/:id/projects — enrolled projects for an influencer
 router.get('/:id/projects', async (req, res) => {
   try {
     const [rows] = await db.query(
       `SELECT p.id, p.title, p.organization, p.platform, p.category, p.goal,
               p.goal_amount, p.deadline, p.emoji, p.description,
-              ip.status AS enrollment_status, ip.enrolled_at
+              ip.status AS enrollment_status, ip.enrolled_at, ip.referral_slug, ip.click_count
        FROM influencer_projects ip
        JOIN projects p ON p.id = ip.project_id
        WHERE ip.influencer_id = ?

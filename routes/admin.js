@@ -10,18 +10,42 @@ router.get('/stats', async (req, res) => {
     const [[pendingNpos]] = await db.query("SELECT COUNT(*) AS total FROM npos WHERE status = 'pending'");
     const [[infCount]] = await db.query("SELECT COUNT(*) AS total FROM influencers WHERE status = 'approved'");
     const [[pendingInf]] = await db.query("SELECT COUNT(*) AS total FROM influencers WHERE status = 'pending'");
+    const [[totalInf]] = await db.query('SELECT COUNT(*) AS total FROM influencers');
+    const [[activeCreators]] = await db.query('SELECT COUNT(DISTINCT influencer_id) AS total FROM influencer_projects');
+    const [[stipendsPaid]] = await db.query("SELECT COALESCE(SUM(amount), 0) AS total FROM transactions WHERE status = 'paid'");
+    const [[stipendsPending]] = await db.query("SELECT COUNT(*) AS total, COALESCE(SUM(amount), 0) AS amount FROM transactions WHERE status = 'pending'");
     const [[projLive]] = await db.query("SELECT COUNT(*) AS total FROM projects WHERE status = 'approved'");
     const [[projPending]] = await db.query("SELECT COUNT(*) AS total FROM projects WHERE status = 'pending'");
+    const [categories] = await db.query(
+      "SELECT category, COUNT(*) AS count FROM projects WHERE status = 'approved' AND category IS NOT NULL AND category != '' GROUP BY category ORDER BY count DESC"
+    );
     res.json({
       npos: npoCount.total,
       pending_npos: pendingNpos.total,
       influencers: infCount.total,
       pending_influencers: pendingInf.total,
+      total_influencers: totalInf.total,
+      active_creators: activeCreators.total,
+      stipends_paid: Number(stipendsPaid.total),
+      stipends_pending_count: stipendsPending.total,
+      stipends_pending_amount: Number(stipendsPending.amount),
       live_projects: projLive.total,
       pending_projects: projPending.total,
+      categories,
     });
   } catch (e) {
-    if (isDbError(e)) return res.json({ npos: 47, pending_npos: 3, influencers: 312, pending_influencers: 3, live_projects: 34, pending_projects: 5 });
+    if (isDbError(e)) return res.json({ npos: 0, pending_npos: 0, influencers: 0, pending_influencers: 0, total_influencers: 0, active_creators: 0, stipends_paid: 0, stipends_pending_count: 0, stipends_pending_amount: 0, live_projects: 0, pending_projects: 0, categories: [] });
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// GET /api/admin/admins — list admin accounts (no password hashes)
+router.get('/admins', async (req, res) => {
+  try {
+    const [rows] = await db.query('SELECT id, name, email, created_at FROM admins ORDER BY created_at DESC');
+    res.json(rows);
+  } catch (e) {
+    if (isDbError(e)) return res.json([]);
     res.status(500).json({ error: e.message });
   }
 });

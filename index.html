@@ -696,9 +696,90 @@ tbody tr:last-child td { border-bottom: none; }
   margin:2px;
 }
 
+/* Authentication gate */
+.auth-gate { position:fixed; inset:0; z-index:1000; display:none; min-height:100vh; overflow-y:auto; padding:32px 20px; background:linear-gradient(135deg,#10213f 0%,#1a2b4a 45%,#1e5c87 100%); }
+.auth-gate.visible { display:flex; align-items:center; justify-content:center; }
+.auth-shell { width:min(100%, 920px); display:grid; grid-template-columns:.8fr 1.2fr; background:#fff; border-radius:22px; overflow:hidden; box-shadow:0 24px 70px rgba(0,0,0,.28); }
+.auth-brand { padding:54px 42px; color:#fff; background:linear-gradient(160deg,#1a2b4a,#1565c0); display:flex; flex-direction:column; justify-content:space-between; }
+.auth-brand h1 { font-family:'Plus Jakarta Sans',sans-serif; font-size:36px; line-height:1.15; margin:24px 0 14px; }
+.auth-brand p { color:rgba(255,255,255,.78); line-height:1.65; }
+.auth-brand-note { font-size:13px; color:rgba(255,255,255,.65); }
+.auth-panel { padding:42px; }
+.auth-panel h2 { font-family:'Plus Jakarta Sans',sans-serif; font-size:25px; margin-bottom:7px; }
+.auth-panel > p { color:var(--slate); font-size:14px; margin-bottom:24px; }
+.auth-tabs { display:flex; gap:4px; padding:4px; border-radius:10px; background:var(--bg); margin-bottom:22px; }
+.auth-tab { flex:1; padding:9px; border:0; border-radius:7px; background:transparent; color:var(--slate); font:600 13px 'DM Sans',sans-serif; cursor:pointer; }
+.auth-tab.active { color:var(--navy); background:#fff; box-shadow:0 1px 4px rgba(26,43,74,.14); }
+.auth-form { display:none; }
+.auth-form.active { display:block; }
+.auth-form .form-group { margin-bottom:13px; }
+.auth-form .form-label { display:block; margin-bottom:6px; }
+.auth-form .btn { width:100%; justify-content:center; margin-top:7px; }
+.auth-more { margin-top:16px; padding-top:16px; border-top:1px solid var(--border); }
+.auth-more summary { cursor:pointer; color:var(--blue); font-size:13px; font-weight:700; margin-bottom:14px; }
+.auth-fields { display:grid; grid-template-columns:1fr 1fr; gap:0 12px; }
+.auth-error { display:none; padding:9px 11px; background:var(--red-light); color:var(--red); border-radius:8px; font-size:12.5px; margin-bottom:14px; }
+.auth-error.visible { display:block; }
+.auth-success { color:var(--green); font-size:12px; margin-top:10px; }
+@media (max-width:720px) { .auth-gate { padding:16px; align-items:flex-start; } .auth-shell { grid-template-columns:1fr; } .auth-brand { padding:28px; min-height:190px; } .auth-brand h1 { font-size:28px; margin:16px 0 8px; } .auth-panel { padding:28px 22px; } .auth-fields { grid-template-columns:1fr; } }
+
 </style>
 </head>
 <body>
+
+<!-- Authentication is shown until an influencer has an active session. -->
+<section class="auth-gate visible" id="auth-gate" aria-label="Influencer authentication">
+  <div class="auth-shell">
+    <aside class="auth-brand">
+      <div>
+        <div class="logo-text">SOCIA</div>
+        <h1>Turn your influence into impact.</h1>
+        <p>Join campaigns that support the causes your community cares about.</p>
+      </div>
+      <div class="auth-brand-note">For creators and influencers</div>
+    </aside>
+    <main class="auth-panel">
+      <h2 id="auth-title">Welcome back</h2>
+      <p id="auth-subtitle">Sign in to view your projects and campaign activity.</p>
+      <div class="auth-tabs" role="tablist">
+        <button class="auth-tab active" type="button" data-auth-tab="signin">Sign in</button>
+        <button class="auth-tab" type="button" data-auth-tab="signup">Create account</button>
+      </div>
+      <div class="auth-error" id="auth-error" role="alert"></div>
+      <form class="auth-form active" id="signin-form">
+        <div class="form-group"><label class="form-label" for="signin-name">Full name</label><input class="form-input" id="signin-name" required autocomplete="name" placeholder="Your full name"></div>
+        <div class="form-group"><label class="form-label" for="signin-password">Password</label><input class="form-input" id="signin-password" required type="password" autocomplete="current-password" placeholder="Your password"></div>
+        <button class="btn btn-primary" type="submit">Sign in</button>
+      </form>
+      <form class="auth-form" id="signup-form">
+        <div class="auth-fields">
+          <div class="form-group"><label class="form-label" for="signup-name">Full name *</label><input class="form-input" id="signup-name" required autocomplete="name"></div>
+          <div class="form-group"><label class="form-label" for="signup-email">Email *</label><input class="form-input" id="signup-email" required type="email" autocomplete="email"></div>
+          <div class="form-group"><label class="form-label" for="signup-password">Password *</label><input class="form-input" id="signup-password" required type="password" minlength="8" autocomplete="new-password" placeholder="At least 8 characters"></div>
+          <div class="form-group"><label class="form-label" for="signup-phone">Phone number</label><input class="form-input" id="signup-phone" autocomplete="tel"></div>
+          <div class="form-group"><label class="form-label" for="signup-country">Country</label><input class="form-input" id="signup-country" autocomplete="country-name"></div>
+          <div class="form-group"><label class="form-label" for="signup-handle">Creator handle</label><input class="form-input" id="signup-handle" placeholder="@yourhandle"></div>
+        </div>
+        <div class="form-group"><label class="form-label" for="signup-bio">Bio / self introduction</label><textarea class="form-input" id="signup-bio" rows="2"></textarea></div>
+        <details class="auth-more"><summary>Add onboarding details (social accounts, verification &amp; payouts)</summary>
+          <div class="auth-fields">
+            <div class="form-group"><label class="form-label" for="signup-causes">Causes</label><input class="form-input" id="signup-causes" placeholder="Education, Healthcare"></div>
+            <div class="form-group"><label class="form-label" for="signup-social">Social account</label><input class="form-input" id="signup-social" placeholder="@username or channel URL"></div>
+            <div class="form-group"><label class="form-label" for="signup-id-type">ID type</label><input class="form-input" id="signup-id-type" placeholder="Passport, Aadhaar…"></div>
+            <div class="form-group"><label class="form-label" for="signup-id-number">ID number</label><input class="form-input" id="signup-id-number"></div>
+            <div class="form-group"><label class="form-label" for="signup-bank-name">Bank name</label><input class="form-input" id="signup-bank-name"></div>
+            <div class="form-group"><label class="form-label" for="signup-account-name">Account holder</label><input class="form-input" id="signup-account-name"></div>
+            <div class="form-group"><label class="form-label" for="signup-account-number">Account number</label><input class="form-input" id="signup-account-number"></div>
+            <div class="form-group"><label class="form-label" for="signup-routing">Routing number</label><input class="form-input" id="signup-routing"></div>
+            <div class="form-group"><label class="form-label" for="signup-tax-country">Tax country</label><input class="form-input" id="signup-tax-country"></div>
+            <div class="form-group"><label class="form-label" for="signup-tax-id">Tax ID</label><input class="form-input" id="signup-tax-id"></div>
+          </div>
+        </details>
+        <button class="btn btn-primary" type="submit">Create influencer account</button>
+      </form>
+    </main>
+  </div>
+</section>
 
 <!-- ══════════════════════ SIDEBAR ══════════════════════ -->
 <aside class="sidebar">
