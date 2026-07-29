@@ -206,4 +206,40 @@ router.get('/activity', async (req, res) => {
   }
 });
 
+// ── PAYOUT & PLATFORM SETTINGS ────────────────────────────────
+
+// GET /api/admin/settings
+router.get('/settings', async (req, res) => {
+  try {
+    const [[settings]] = await db.query('SELECT * FROM platform_settings WHERE id = 1');
+    res.json(settings || {});
+  } catch (e) {
+    if (isDbError(e)) return res.json({ payout_day: 5, platform_fee_percent: 3.5, minimum_payout_amount: 1000, disbursement_frequency: 'Monthly' });
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// PUT /api/admin/settings
+router.put('/settings', async (req, res) => {
+  try {
+    const b = req.body;
+    const payout_day = Math.min(28, Math.max(1, parseInt(b.payout_day, 10) || 5));
+    const platform_fee_percent = Number(b.platform_fee_percent) || 0;
+    const minimum_payout_amount = Number(b.minimum_payout_amount) || 0;
+    const disbursement_frequency = b.disbursement_frequency || 'Monthly';
+
+    await db.query(
+      `UPDATE platform_settings
+       SET payout_day = ?, platform_fee_percent = ?, minimum_payout_amount = ?, disbursement_frequency = ?
+       WHERE id = 1`,
+      [payout_day, platform_fee_percent, minimum_payout_amount, disbursement_frequency]
+    );
+    const [[settings]] = await db.query('SELECT * FROM platform_settings WHERE id = 1');
+    res.json(settings);
+  } catch (e) {
+    if (isDbError(e)) return res.json({ success: true, _mock: true });
+    res.status(500).json({ error: e.message });
+  }
+});
+
 module.exports = router;

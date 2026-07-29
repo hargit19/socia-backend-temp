@@ -42,7 +42,7 @@ router.get('/approved', async (req, res) => {
     if (category) { sql += ' AND category = ?'; params.push(category); }
     if (platform) { sql += ' AND platform = ?'; params.push(platform); }
     if (search) { sql += ' AND (title LIKE ? OR organization LIKE ?)'; params.push(`%${search}%`, `%${search}%`); }
-    sql += ' ORDER BY deadline ASC';
+    sql += ' ORDER BY created_at DESC, id DESC';
     const [rows] = await db.query(sql, params);
     res.json(rows);
   } catch (e) {
@@ -65,6 +65,8 @@ router.post('/', async (req, res) => {
     const goal_text    = b.goal        || '';
     // Parse numeric goal from text like "$60,000" or "60000"
     const goal_amount  = parseFloat(String(goal_text).replace(/[^0-9.]/g, '')) || 0;
+    const stipend_text   = b.stipendAmount || b.stipend_amount || '';
+    const stipend_amount = parseFloat(String(stipend_text).replace(/[^0-9.]/g, '')) || 0;
     // Normalize platform — table uses ENUM, map anything unrecognized to 'Other'
     const PLATFORMS = ['GoFundMe','Kickstarter','Indiegogo','Other'];
     const platform     = PLATFORMS.includes(b.platform) ? b.platform : 'Other';
@@ -76,8 +78,8 @@ router.post('/', async (req, res) => {
     const [result] = await db.query(
       `INSERT INTO projects
         (npo_id, title, organization, category, platform, external_url, goal, goal_amount, stipend_amount, deadline, description, status)
-       VALUES (?,?,?,?,?,?,?,?,0,?,?,'pending')`,
-      [npo_id, title, organization, category, platform, external_url || null, goal_text, goal_amount, deadline, description]
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,'pending')`,
+      [npo_id, title, organization, category, platform, external_url || null, goal_text, goal_amount, stipend_amount, deadline, description]
     );
     res.status(201).json({ id: result.insertId, status: 'pending' });
 
