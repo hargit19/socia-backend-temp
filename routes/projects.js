@@ -1,14 +1,36 @@
 const router = require('express').Router();
-const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
+const multer = require('multer');
 const db = require('../db');
 const mock = require('../data/mockData');
 const notify = require('../lib/notify');
 
 const isDbError = e => ['ETIMEDOUT','ECONNREFUSED','ENOTFOUND','ER_ACCESS_DENIED_ERROR'].includes(e.code) || e.fatal;
 
-const slugify = (s) => String(s || '').toLowerCase().trim()
-  .replace(/[^a-z0-9]+/g, '-')
-  .replace(/^-+|-+$/g, '');
+// ── Project material uploads (project & NPO overview PDF, creator script PDF) ──
+const UPLOAD_ROOT = path.join(__dirname, '..', 'uploads', 'materials');
+const MATERIAL_SPECS = {
+  overview: { name: 'Project & NPO Overview', material_type: 'pdf', icon: '📄' },
+  script: { name: 'Creator Script (~3 min)', material_type: 'script', icon: '🎬' },
+};
+
+const materialsStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const dir = path.join(UPLOAD_ROOT, String(req.params.id));
+    fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => cb(null, `${file.fieldname}-${Date.now()}.pdf`),
+});
+const uploadMaterials = multer({
+  storage: materialsStorage,
+  limits: { fileSize: 15 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype !== 'application/pdf') return cb(new Error('Only PDF files are allowed'));
+    cb(null, true);
+  },
+});
 
 // GET /api/projects
 router.get('/', async (req, res) => {
@@ -72,14 +94,22 @@ router.post('/', async (req, res) => {
     const platform     = PLATFORMS.includes(b.platform) ? b.platform : 'Other';
     const npo_id       = b.npo_id || null;
     const external_url = b.external_url || b.url || '';
+    const CROWDFUNDING_MODELS = ['All-In', 'Other'];
+    const modelInput = b.crowdfunding_model || b.crowdfundingModel || 'All-In';
+    const crowdfunding_model = CROWDFUNDING_MODELS.includes(modelInput) ? modelInput : 'All-In';
+    const crowdfunding_model_other = crowdfunding_model === 'Other'
+      ? (b.crowdfunding_model_other || b.crowdfundingModelOther || '')
+      : null;
 
     if (!title) return res.status(400).json({ error: 'Project name is required' });
 
     const [result] = await db.query(
       `INSERT INTO projects
-        (npo_id, title, organization, category, platform, external_url, goal, goal_amount, stipend_amount, deadline, description, status)
-       VALUES (?,?,?,?,?,?,?,?,?,?,?,'pending')`,
-      [npo_id, title, organization, category, platform, external_url || null, goal_text, goal_amount, stipend_amount, deadline, description]
+        (npo_id, title, organization, category, platform, crowdfunding_model, crowdfunding_model_other,
+         external_url, goal, goal_amount, stipend_amount, deadline, description, status)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,'pending')`,
+      [npo_id, title, organization, category, platform, crowdfunding_model, crowdfunding_model_other,
+       external_url || null, goal_text, goal_amount, stipend_amount, deadline, description]
     );
     res.status(201).json({ id: result.insertId, status: 'pending' });
 
@@ -109,8 +139,56 @@ router.post('/:id/submit', async (req, res) => {
   }
 });
 
-// POST /api/projects/:id/enroll — influencer enrolls in an approved project.
-// Generates a shareable referral link slugged from the project name, influencer name, and platform.
+// POST /api/projects/:id/materials — NPO uploads the two required creator materials
+// (project & NPO overview PDF, ~3 min creator script PDF). Re-uploading either one
+// replaces the existing file for that slot rather than creating a duplicate row.
+router.post('/:id/materials', (req, res) => {
+  uploadMaterials.fields([{ name: 'overview', maxCount: 1 }, { name: 'script', maxCount: 1 }])(req, res, async (err) => {
+    if (err) return res.status(400).json({ error: err.message });
+    try {
+      const project_id = req.params.id;
+      const files = req.files || {};
+      const saved = [];
+
+      for (const [field, spec] of Object.entries(MATERIAL_SPECS)) {
+        const file = files[field]?.[0];
+        if (!file) continue;
+        const file_url = `/uploads/materials/${project_id}/${file.filename}`;
+        const file_size_mb = Math.round((file.size / (1024 * 1024)) * 100) / 100;
+
+        const [[existing]] = await db.query(
+          'SELECT id, file_url FROM materials WHERE project_id = ? AND material_type = ?',
+          [project_id, spec.material_type]
+        );
+        if (existing) {
+          if (existing.file_url) {
+            const oldPath = path.join(__dirname, '..', existing.file_url);
+            fs.unlink(oldPath, () => {});
+          }
+          await db.query('UPDATE materials SET name=?, file_size_mb=?, file_url=?, icon=? WHERE id=?',
+            [spec.name, file_size_mb, file_url, spec.icon, existing.id]);
+          saved.push({ id: existing.id, name: spec.name, material_type: spec.material_type, file_url, file_size_mb });
+        } else {
+          const [result] = await db.query(
+            'INSERT INTO materials (project_id, name, material_type, file_size_mb, file_url, is_canva_link, icon) VALUES (?,?,?,?,?,0,?)',
+            [project_id, spec.name, spec.material_type, file_size_mb, file_url, spec.icon]
+          );
+          saved.push({ id: result.insertId, name: spec.name, material_type: spec.material_type, file_url, file_size_mb });
+        }
+      }
+
+      if (saved.length === 0) return res.status(400).json({ error: 'No files uploaded. Expected fields: overview, script' });
+      res.status(201).json({ success: true, materials: saved });
+    } catch (e) {
+      if (isDbError(e)) return res.status(201).json({ success: true, _mock: true });
+      res.status(500).json({ error: e.message });
+    }
+  });
+});
+
+// POST /api/projects/:id/enroll — influencer applies to promote an approved project.
+// Creates a pending application: it only becomes a live enrollment (with a referral
+// link) once BOTH the owning NPO and a platform admin approve it.
 router.post('/:id/enroll', async (req, res) => {
   try {
     const influencer_id = req.body.influencer_id || req.body.user_id;
@@ -118,33 +196,34 @@ router.post('/:id/enroll', async (req, res) => {
     if (!influencer_id) return res.status(400).json({ error: 'influencer_id required' });
 
     const [[existing]] = await db.query(
-      'SELECT referral_slug FROM influencer_projects WHERE influencer_id = ? AND project_id = ?',
+      'SELECT id, status, npo_status, admin_status, referral_slug FROM influencer_projects WHERE influencer_id = ? AND project_id = ?',
       [influencer_id, project_id]
     );
-    if (existing) return res.json({ success: true, referral_slug: existing.referral_slug });
+    if (existing) return res.json({ success: true, ...existing });
 
-    const [[project]] = await db.query('SELECT title, platform, organization FROM projects WHERE id = ?', [project_id]);
+    const [[project]] = await db.query('SELECT title, platform, organization, npo_id FROM projects WHERE id = ?', [project_id]);
     const [[influencer]] = await db.query('SELECT full_name, email FROM influencers WHERE id = ?', [influencer_id]);
     if (!project || !influencer) return res.status(404).json({ error: 'Project or influencer not found' });
 
-    const base = [project.title, influencer.full_name, project.platform].map(slugify).filter(Boolean).join('-');
-    const referral_slug = `${base}-${crypto.randomBytes(3).toString('hex')}`;
-
-    await db.query(
-      "INSERT INTO influencer_projects (influencer_id, project_id, status, referral_slug) VALUES (?, ?, 'enrolled', ?)",
-      [influencer_id, project_id, referral_slug]
+    const [result] = await db.query(
+      "INSERT INTO influencer_projects (influencer_id, project_id, status, npo_status, admin_status) VALUES (?, ?, 'pending', 'pending', 'pending')",
+      [influencer_id, project_id]
     );
-    res.json({ success: true, referral_slug });
+    res.json({ success: true, id: result.insertId, status: 'pending', npo_status: 'pending', admin_status: 'pending' });
 
     try {
-      if (influencer.email) {
-        await notify.sendInfluencerEnrolled(influencer.email, influencer.full_name, project.title, project.organization);
+      if (project.npo_id) {
+        const [[npo]] = await db.query('SELECT email, admin_name, org_name FROM npos WHERE id = ?', [project.npo_id]);
+        if (npo?.email) {
+          await notify.sendNPOCreatorApplied(npo.email, npo.admin_name || npo.org_name || 'there', influencer.full_name, project.title);
+        }
       }
+      await notify.notifyAdmins('creator_application', `${influencer.full_name} → ${project.title}`, 'Awaiting NPO and admin approval before this creator can go live.');
     } catch (notifyErr) {
-      console.error('[projects] Failed to send enrollment notification:', notifyErr.message);
+      console.error('[projects] Failed to send application notifications:', notifyErr.message);
     }
   } catch (e) {
-    if (isDbError(e)) return res.json({ success: true, _mock: true });
+    if (isDbError(e)) return res.json({ success: true, _mock: true, status: 'pending', npo_status: 'pending', admin_status: 'pending' });
     res.status(500).json({ error: e.message });
   }
 });

@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const db = require('../db');
+const { finalizeIfApproved } = require('../lib/enrollmentApproval');
 
 const isDbError = e => ['ETIMEDOUT','ECONNREFUSED','ENOTFOUND','ER_ACCESS_DENIED_ERROR'].includes(e.code) || e.fatal;
 
@@ -11,11 +12,12 @@ router.get('/stats', async (req, res) => {
     const [[infCount]] = await db.query("SELECT COUNT(*) AS total FROM influencers WHERE status = 'approved'");
     const [[pendingInf]] = await db.query("SELECT COUNT(*) AS total FROM influencers WHERE status = 'pending'");
     const [[totalInf]] = await db.query('SELECT COUNT(*) AS total FROM influencers');
-    const [[activeCreators]] = await db.query('SELECT COUNT(DISTINCT influencer_id) AS total FROM influencer_projects');
+    const [[activeCreators]] = await db.query("SELECT COUNT(DISTINCT influencer_id) AS total FROM influencer_projects WHERE status = 'enrolled'");
     const [[stipendsPaid]] = await db.query("SELECT COALESCE(SUM(amount), 0) AS total FROM transactions WHERE status = 'paid'");
     const [[stipendsPending]] = await db.query("SELECT COUNT(*) AS total, COALESCE(SUM(amount), 0) AS amount FROM transactions WHERE status = 'pending'");
     const [[projLive]] = await db.query("SELECT COUNT(*) AS total FROM projects WHERE status = 'approved'");
     const [[projPending]] = await db.query("SELECT COUNT(*) AS total FROM projects WHERE status = 'pending'");
+    const [[pendingApplications]] = await db.query("SELECT COUNT(*) AS total FROM influencer_projects WHERE admin_status = 'pending'");
     const [categories] = await db.query(
       "SELECT category, COUNT(*) AS count FROM projects WHERE status = 'approved' AND category IS NOT NULL AND category != '' GROUP BY category ORDER BY count DESC"
     );
@@ -31,10 +33,11 @@ router.get('/stats', async (req, res) => {
       stipends_pending_amount: Number(stipendsPending.amount),
       live_projects: projLive.total,
       pending_projects: projPending.total,
+      pending_applications: pendingApplications.total,
       categories,
     });
   } catch (e) {
-    if (isDbError(e)) return res.json({ npos: 0, pending_npos: 0, influencers: 0, pending_influencers: 0, total_influencers: 0, active_creators: 0, stipends_paid: 0, stipends_pending_count: 0, stipends_pending_amount: 0, live_projects: 0, pending_projects: 0, categories: [] });
+    if (isDbError(e)) return res.json({ npos: 0, pending_npos: 0, influencers: 0, pending_influencers: 0, total_influencers: 0, active_creators: 0, stipends_paid: 0, stipends_pending_count: 0, stipends_pending_amount: 0, live_projects: 0, pending_projects: 0, pending_applications: 0, categories: [] });
     res.status(500).json({ error: e.message });
   }
 });
@@ -173,6 +176,57 @@ router.post('/influencers/:id/reject', async (req, res) => {
   }
 });
 
+// ── CREATOR ↔ PROJECT ENROLLMENT APPROVALS ────────────────────
+
+// GET /api/admin/influencer-approvals — creator campaign applications platform-wide
+router.get('/influencer-approvals', async (req, res) => {
+  try {
+    const { status } = req.query; // optional: filter by admin_status
+    let sql = `
+      SELECT ip.id, ip.status, ip.npo_status, ip.admin_status, ip.enrolled_at,
+             p.id AS project_id, p.title AS project_title,
+             n.id AS npo_id, n.org_name AS npo_name,
+             i.id AS influencer_id, i.full_name AS influencer_name, i.email AS influencer_email
+      FROM influencer_projects ip
+      JOIN projects p ON p.id = ip.project_id
+      LEFT JOIN npos n ON n.id = p.npo_id
+      JOIN influencers i ON i.id = ip.influencer_id
+      WHERE 1=1
+    `;
+    const params = [];
+    if (status) { sql += ' AND ip.admin_status = ?'; params.push(status); }
+    sql += " ORDER BY (ip.admin_status = 'pending') DESC, ip.enrolled_at DESC";
+    const [rows] = await db.query(sql, params);
+    res.json(rows);
+  } catch (e) {
+    if (isDbError(e)) return res.json([]);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// POST /api/admin/influencer-approvals/:id/approve
+router.post('/influencer-approvals/:id/approve', async (req, res) => {
+  try {
+    await db.query("UPDATE influencer_projects SET admin_status = 'approved' WHERE id = ?", [req.params.id]);
+    const row = await finalizeIfApproved(req.params.id);
+    res.json({ success: true, status: row?.status, admin_status: 'approved', npo_status: row?.npo_status });
+  } catch (e) {
+    if (isDbError(e)) return res.json({ success: true, _mock: true });
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// POST /api/admin/influencer-approvals/:id/reject
+router.post('/influencer-approvals/:id/reject', async (req, res) => {
+  try {
+    await db.query("UPDATE influencer_projects SET admin_status = 'rejected', status = 'rejected' WHERE id = ?", [req.params.id]);
+    res.json({ success: true });
+  } catch (e) {
+    if (isDbError(e)) return res.json({ success: true, _mock: true });
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // GET /api/admin/pending — all pending items in one call
 router.get('/pending', async (req, res) => {
   try {
@@ -197,6 +251,10 @@ router.get('/activity', async (req, res) => {
        (SELECT 'project_submitted' AS type, title AS label, created_at AS ts FROM projects WHERE status = 'pending' ORDER BY created_at DESC LIMIT 5)
        UNION ALL
        (SELECT 'influencer_registered' AS type, full_name AS label, created_at AS ts FROM influencers ORDER BY created_at DESC LIMIT 5)
+       UNION ALL
+       (SELECT 'creator_application' AS type, CONCAT(i.full_name, ' → ', p.title) AS label, ip.enrolled_at AS ts
+        FROM influencer_projects ip JOIN influencers i ON i.id = ip.influencer_id JOIN projects p ON p.id = ip.project_id
+        WHERE ip.status = 'pending' ORDER BY ip.enrolled_at DESC LIMIT 5)
        ORDER BY ts DESC LIMIT 20`
     );
     res.json(rows);

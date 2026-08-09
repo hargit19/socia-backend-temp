@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const db = require('../db');
+const { finalizeIfApproved } = require('../lib/enrollmentApproval');
 
 const isDbError = e => ['ETIMEDOUT','ECONNREFUSED','ENOTFOUND','ER_ACCESS_DENIED_ERROR'].includes(e.code) || e.fatal;
 
@@ -27,6 +28,9 @@ router.post('/', async (req, res) => {
     const bank_account   = b.bank_account   || b.account       || b.accountNumber || '';
     const bank_branch    = b.bank_branch    || b.branch        || b.bankBranch || '';
     const bank_account_name = b.bank_account_name || b.holder  || b.accountHolder || '';
+    const bank_number    = b.bank_number    || b.bankNumber    || '';
+    const branch_code    = b.branch_code    || b.branchCode    || '';
+    const account_type   = b.account_type   || b.accountType   || '';
 
     if (!org_name || !email) {
       return res.status(400).json({ error: 'Organization name and email are required' });
@@ -35,11 +39,13 @@ router.post('/', async (req, res) => {
     const [result] = await db.query(
       `INSERT INTO npos
         (org_name, org_type, ein, website, phone, email, country, address, mission, causes,
-         kyc_name, kyc_id_type, kyc_id_number, bank_name, bank_account, bank_branch, bank_account_name, status)
-       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'pending')`,
+         kyc_name, kyc_id_type, kyc_id_number, bank_name, bank_account, bank_branch, bank_account_name,
+         bank_number, branch_code, account_type, status)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'pending')`,
       [org_name, org_type, ein, website, phone, email, country, address, mission,
        JSON.stringify(causes), kyc_name, kyc_id_type, kyc_id_number,
-       bank_name, bank_account, bank_branch, bank_account_name]
+       bank_name, bank_account, bank_branch, bank_account_name,
+       bank_number, branch_code, account_type]
     );
     res.status(201).json({ id: result.insertId, status: 'pending' });
   } catch (e) {
@@ -73,17 +79,22 @@ router.put('/:id', async (req, res) => {
     const bank_account   = b.bank_account   || b.account       || b.accountNumber || '';
     const bank_branch    = b.bank_branch    || b.branch        || b.bankBranch || '';
     const bank_account_name = b.bank_account_name || b.holder  || b.accountHolder || '';
+    const bank_number    = b.bank_number    || b.bankNumber    || '';
+    const branch_code    = b.branch_code    || b.branchCode    || '';
+    const account_type   = b.account_type   || b.accountType   || '';
 
     if (!email) return res.status(400).json({ error: 'Email is required' });
 
     await db.query(
       `UPDATE npos SET org_name=?, org_type=?, admin_name=?, ein=?, website=?, phone=?, email=?, country=?,
        address=?, mission=?, causes=?, kyc_name=?, kyc_id_type=?, kyc_id_number=?,
-       bank_name=?, bank_account=?, bank_branch=?, bank_account_name=? WHERE id=?`,
+       bank_name=?, bank_account=?, bank_branch=?, bank_account_name=?,
+       bank_number=?, branch_code=?, account_type=? WHERE id=?`,
       [org_name || null, org_type || null, admin_name || null, ein || null, website || null, phone || null,
        email, country || null, address || null, mission || null, JSON.stringify(causes),
        kyc_name || null, kyc_id_type || null, kyc_id_number || null,
        bank_name || null, bank_account || null, bank_branch || null, bank_account_name || null,
+       bank_number || null, branch_code || null, account_type || null,
        req.params.id]
     );
     res.json({ id: Number(req.params.id), status: 'pending' });
@@ -98,7 +109,8 @@ router.get('/:id/projects', async (req, res) => {
   try {
     const [rows] = await db.query(
       `SELECT p.*,
-              (SELECT COUNT(*) FROM influencer_projects ip WHERE ip.project_id = p.id) AS creator_count,
+              (SELECT COUNT(*) FROM influencer_projects ip WHERE ip.project_id = p.id AND ip.status = 'enrolled') AS creator_count,
+              (SELECT COUNT(*) FROM influencer_projects ip WHERE ip.project_id = p.id AND ip.npo_status = 'pending') AS pending_applicants,
               (SELECT COALESCE(SUM(ip.click_count), 0) FROM influencer_projects ip WHERE ip.project_id = p.id) AS total_clicks
        FROM projects p WHERE p.npo_id = ? ORDER BY p.created_at DESC`,
       [req.params.id]
@@ -106,6 +118,77 @@ router.get('/:id/projects', async (req, res) => {
     res.json(rows);
   } catch (e) {
     if (isDbError(e)) return res.json([]);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// GET /api/npos/:id/materials — every uploaded material across this NPO's projects
+router.get('/:id/materials', async (req, res) => {
+  try {
+    const [rows] = await db.query(
+      `SELECT m.*, p.title AS project_title, p.id AS project_id
+       FROM materials m JOIN projects p ON p.id = m.project_id
+       WHERE p.npo_id = ?
+       ORDER BY p.created_at DESC, m.id ASC`,
+      [req.params.id]
+    );
+    res.json(rows);
+  } catch (e) {
+    if (isDbError(e)) return res.json([]);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// GET /api/npos/:id/influencer-approvals — creator applications across this NPO's projects
+router.get('/:id/influencer-approvals', async (req, res) => {
+  try {
+    const [rows] = await db.query(
+      `SELECT ip.id, ip.status, ip.npo_status, ip.admin_status, ip.enrolled_at,
+              p.id AS project_id, p.title AS project_title, p.emoji,
+              i.id AS influencer_id, i.full_name AS influencer_name, i.email AS influencer_email, i.country, i.bio
+       FROM influencer_projects ip
+       JOIN projects p ON p.id = ip.project_id
+       JOIN influencers i ON i.id = ip.influencer_id
+       WHERE p.npo_id = ?
+       ORDER BY (ip.npo_status = 'pending') DESC, ip.enrolled_at DESC`,
+      [req.params.id]
+    );
+    res.json(rows);
+  } catch (e) {
+    if (isDbError(e)) return res.json([]);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// POST /api/npos/:id/influencer-approvals/:appId/approve
+router.post('/:id/influencer-approvals/:appId/approve', async (req, res) => {
+  try {
+    const [result] = await db.query(
+      `UPDATE influencer_projects ip JOIN projects p ON p.id = ip.project_id
+       SET ip.npo_status = 'approved' WHERE ip.id = ? AND p.npo_id = ?`,
+      [req.params.appId, req.params.id]
+    );
+    if (!result.affectedRows) return res.status(404).json({ error: 'Application not found' });
+    const row = await finalizeIfApproved(req.params.appId);
+    res.json({ success: true, status: row?.status, npo_status: 'approved', admin_status: row?.admin_status });
+  } catch (e) {
+    if (isDbError(e)) return res.json({ success: true, _mock: true });
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// POST /api/npos/:id/influencer-approvals/:appId/reject
+router.post('/:id/influencer-approvals/:appId/reject', async (req, res) => {
+  try {
+    const [result] = await db.query(
+      `UPDATE influencer_projects ip JOIN projects p ON p.id = ip.project_id
+       SET ip.npo_status = 'rejected', ip.status = 'rejected' WHERE ip.id = ? AND p.npo_id = ?`,
+      [req.params.appId, req.params.id]
+    );
+    if (!result.affectedRows) return res.status(404).json({ error: 'Application not found' });
+    res.json({ success: true });
+  } catch (e) {
+    if (isDbError(e)) return res.json({ success: true, _mock: true });
     res.status(500).json({ error: e.message });
   }
 });

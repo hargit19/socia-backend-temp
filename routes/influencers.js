@@ -38,6 +38,9 @@ router.post('/', async (req, res) => {
     const bank_account   = b.bank_account   || b.accountNumber || '';
     const bank_branch    = b.bank_branch    || b.bankBranch    || '';
     const bank_account_name = b.bank_account_name || b.accountHolder || '';
+    const bank_number    = b.bank_number    || b.bankNumber    || '';
+    const branch_code    = b.branch_code    || b.branchCode    || '';
+    const account_type   = b.account_type   || b.accountType   || '';
     const tax_country    = b.tax_country    || b.taxCountry    || '';
     const tax_id         = b.tax_id         || b.taxId         || '';
     const tax_form       = b.tax_form       || b.taxForm       || '';
@@ -50,11 +53,13 @@ router.post('/', async (req, res) => {
       `INSERT INTO influencers
         (full_name, email, phone, country, bio, causes, sns_accounts,
          id_type, id_number, bank_name, bank_account, bank_branch, bank_account_name,
+         bank_number, branch_code, account_type,
          tax_country, tax_id, tax_form, status)
-       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'pending')`,
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'pending')`,
       [full_name, email, phone, country, bio,
        JSON.stringify(causes), JSON.stringify(sns_accounts),
        id_type, id_number, bank_name, bank_account, bank_branch, bank_account_name,
+       bank_number, branch_code, account_type,
        tax_country, tax_id, tax_form]
     );
     res.status(201).json({ id: result.insertId, status: 'pending' });
@@ -75,11 +80,14 @@ router.put('/:id', async (req, res) => {
     if (!full_name || !email) return res.status(400).json({ error: 'Full name and email are required' });
     await db.query(
       `UPDATE influencers SET full_name=?, email=?, phone=?, country=?, bio=?, causes=?, sns_accounts=?,
-       id_type=?, id_number=?, bank_name=?, bank_account=?, bank_branch=?, bank_account_name=? WHERE id=?`,
+       id_type=?, id_number=?, bank_name=?, bank_account=?, bank_branch=?, bank_account_name=?,
+       bank_number=?, branch_code=?, account_type=? WHERE id=?`,
       [full_name, email, b.phone || '', b.country || '', b.bio || '', JSON.stringify(b.causes || []), JSON.stringify(b.sns_accounts || b.snsAccounts || []),
        b.id_type || b.idType || '', b.id_number || b.idNumber || '', b.bank_name || b.bankName || '',
        b.bank_account || b.accountNumber || '', b.bank_branch || b.bankBranch || '',
-       b.bank_account_name || b.accountHolder || '', req.params.id]
+       b.bank_account_name || b.accountHolder || '',
+       b.bank_number || b.bankNumber || '', b.branch_code || b.branchCode || '', b.account_type || b.accountType || '',
+       req.params.id]
     );
     res.json({ id: Number(req.params.id), status: 'pending' });
   } catch (e) {
@@ -94,7 +102,9 @@ router.get('/:id/projects', async (req, res) => {
     const [rows] = await db.query(
       `SELECT p.id, p.title, p.organization, p.platform, p.category, p.goal,
               p.goal_amount, p.stipend_amount, p.deadline, p.emoji, p.description,
-              ip.status AS enrollment_status, ip.enrolled_at, ip.referral_slug, ip.click_count
+              p.crowdfunding_model, p.crowdfunding_model_other,
+              ip.id AS enrollment_id, ip.status, ip.npo_status, ip.admin_status,
+              ip.enrolled_at, ip.referral_slug, ip.click_count
        FROM influencer_projects ip
        JOIN projects p ON p.id = ip.project_id
        WHERE ip.influencer_id = ?
@@ -117,7 +127,7 @@ router.get('/:id/earnings', async (req, res) => {
     const [rows] = await db.query(
       `SELECT p.id, p.title, p.organization, p.stipend_amount, p.deadline, ip.status
        FROM influencer_projects ip JOIN projects p ON p.id = ip.project_id
-       WHERE ip.influencer_id = ? AND ip.status != 'dropped'
+       WHERE ip.influencer_id = ? AND ip.status NOT IN ('dropped', 'pending', 'rejected')
        ORDER BY p.deadline DESC`,
       [req.params.id]
     );

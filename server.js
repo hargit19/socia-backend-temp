@@ -7,8 +7,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Serve the static frontend
-app.use(express.static(path.join(__dirname)));
+// Serve the static frontend (and uploaded materials). Dotfiles (.env, etc.) are
+// never served, even though they live in the same root as the static assets.
+app.use(express.static(path.join(__dirname), { dotfiles: 'ignore' }));
 
 // API routes
 app.use('/api/users', require('./routes/users'));
