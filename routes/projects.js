@@ -89,6 +89,8 @@ router.post('/', async (req, res) => {
     const goal_amount  = parseFloat(String(goal_text).replace(/[^0-9.]/g, '')) || 0;
     const stipend_text   = b.stipendAmount || b.stipend_amount || '';
     const stipend_amount = parseFloat(String(stipend_text).replace(/[^0-9.]/g, '')) || 0;
+    const commission_input = b.commission_percent ?? b.commissionPercent;
+    const commission_percent = Number.isFinite(parseFloat(commission_input)) ? parseFloat(commission_input) : 10;
     // Normalize platform — table uses ENUM, map anything unrecognized to 'Other'
     const PLATFORMS = ['GoFundMe','Kickstarter','Indiegogo','Other'];
     const platform     = PLATFORMS.includes(b.platform) ? b.platform : 'Other';
@@ -106,10 +108,10 @@ router.post('/', async (req, res) => {
     const [result] = await db.query(
       `INSERT INTO projects
         (npo_id, title, organization, category, platform, crowdfunding_model, crowdfunding_model_other,
-         external_url, goal, goal_amount, stipend_amount, deadline, description, status)
-       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,'pending')`,
+         external_url, goal, goal_amount, stipend_amount, commission_percent, deadline, description, status)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,'pending')`,
       [npo_id, title, organization, category, platform, crowdfunding_model, crowdfunding_model_other,
-       external_url || null, goal_text, goal_amount, stipend_amount, deadline, description]
+       external_url || null, goal_text, goal_amount, stipend_amount, commission_percent, deadline, description]
     );
     res.status(201).json({ id: result.insertId, status: 'pending' });
 

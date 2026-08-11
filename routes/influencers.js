@@ -132,9 +132,19 @@ router.get('/:id/earnings', async (req, res) => {
       [req.params.id]
     );
 
+    const [donations] = await db.query(
+      `SELECT d.amount, d.commission_amount, d.donor_name, d.created_at, ip.project_id
+       FROM donations d JOIN influencer_projects ip ON ip.id = d.influencer_project_id
+       WHERE ip.influencer_id = ? ORDER BY d.created_at DESC`,
+      [req.params.id]
+    );
+
+    // Commissions are always unpaid until the next payout cycle — same treatment as
+    // an in-progress stipend campaign, so they fold straight into pending_payout.
     const pending_payout = rows
       .filter(r => r.status === 'enrolled' || r.status === 'active')
-      .reduce((s, r) => s + Number(r.stipend_amount || 0), 0);
+      .reduce((s, r) => s + Number(r.stipend_amount || 0), 0)
+      + donations.reduce((s, d) => s + Number(d.commission_amount || 0), 0);
     const total_earned = rows
       .filter(r => r.status === 'completed')
       .reduce((s, r) => s + Number(r.stipend_amount || 0), 0);
@@ -147,6 +157,14 @@ router.get('/:id/earnings', async (req, res) => {
       if (!monthlyMap.has(key)) monthlyMap.set(key, { year: d.getFullYear(), month: d.getMonth() + 1, amount: 0, count: 0 });
       const bucket = monthlyMap.get(key);
       bucket.amount += Number(r.stipend_amount || 0);
+      bucket.count += 1;
+    }
+    for (const d of donations) {
+      const dt = new Date(d.created_at);
+      const key = `${dt.getFullYear()}-${dt.getMonth() + 1}`;
+      if (!monthlyMap.has(key)) monthlyMap.set(key, { year: dt.getFullYear(), month: dt.getMonth() + 1, amount: 0, count: 0 });
+      const bucket = monthlyMap.get(key);
+      bucket.amount += Number(d.commission_amount || 0);
       bucket.count += 1;
     }
     const monthly = [...monthlyMap.values()].sort((a, b) => b.year - a.year || b.month - a.month);
@@ -166,9 +184,10 @@ router.get('/:id/earnings', async (req, res) => {
       next_payout_date: fmt(next_payout_date),
       monthly,
       campaigns: rows,
+      recent_donations: donations,
     });
   } catch (e) {
-    if (isDbError(e)) return res.json({ pending_payout: 0, total_earned: 0, payout_day: 5, cutoff_date: null, next_payout_date: null, monthly: [], campaigns: [] });
+    if (isDbError(e)) return res.json({ pending_payout: 0, total_earned: 0, payout_day: 5, cutoff_date: null, next_payout_date: null, monthly: [], campaigns: [], recent_donations: [] });
     res.status(500).json({ error: e.message });
   }
 });

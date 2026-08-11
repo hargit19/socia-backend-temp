@@ -26,4 +26,37 @@ router.get('/:slug', async (req, res) => {
   }
 });
 
+// POST /api/go/:slug/donate — dummy checkout: records a simulated donation against
+// this referral link, attributes commission to the influencer, and bumps the
+// project's raised amount. Always succeeds — this is a stand-in for a real gateway.
+router.post('/:slug/donate', async (req, res) => {
+  try {
+    const amount = Number(req.body.amount);
+    if (!Number.isFinite(amount) || amount <= 0) return res.status(400).json({ error: 'amount must be a positive number' });
+
+    const [[link]] = await db.query(
+      `SELECT ip.id AS influencer_project_id, p.id AS project_id, p.commission_percent
+       FROM influencer_projects ip
+       JOIN projects p ON p.id = ip.project_id
+       WHERE ip.referral_slug = ?`,
+      [req.params.slug]
+    );
+    if (!link) return res.status(404).json({ error: 'Link not found' });
+
+    const commission_amount = Math.round(amount * Number(link.commission_percent) / 100 * 100) / 100;
+    const donor_name = req.body.donor_name || null;
+
+    const [result] = await db.query(
+      'INSERT INTO donations (influencer_project_id, amount, commission_amount, donor_name) VALUES (?, ?, ?, ?)',
+      [link.influencer_project_id, amount, commission_amount, donor_name]
+    );
+    await db.query('UPDATE projects SET raised_amount = raised_amount + ? WHERE id = ?', [amount, link.project_id]);
+
+    res.status(201).json({ success: true, donation_id: result.insertId, amount, commission_amount });
+  } catch (e) {
+    if (isDbError(e)) return res.status(201).json({ success: true, donation_id: Date.now(), amount: Number(req.body.amount) || 0, commission_amount: 0, _mock: true });
+    res.status(500).json({ error: e.message });
+  }
+});
+
 module.exports = router;
